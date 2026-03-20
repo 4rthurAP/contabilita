@@ -18,8 +18,10 @@ export function DashboardLayout() {
         )}
       >
         <Header />
-        <main className="p-4 sm:p-6 lg:p-8">
-          <Outlet />
+        <main className="p-4 sm:p-6 lg:p-8 max-w-screen-2xl mx-auto">
+          <div className="motion-safe:animate-fade-in">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

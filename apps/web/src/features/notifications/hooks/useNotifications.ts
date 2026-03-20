@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationService } from '../services/notification.service';
+import { queryDefaults } from '@/lib/query-defaults';
 
 export function useNotifications(unreadOnly = false) {
   return useQuery({
     queryKey: ['notifications', unreadOnly],
     queryFn: () => notificationService.getAll(unreadOnly || undefined),
     refetchInterval: 60000,
+    staleTime: queryDefaults.realtime,
   });
 }
 

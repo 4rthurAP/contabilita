@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Menu, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, getInitials } from '@/components/ui/avatar';
 import { useUiStore } from '@/stores/ui.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { TenantSwitcher } from './TenantSwitcher';
@@ -45,7 +46,12 @@ export function Header() {
 
       {user && (
         <div className="flex items-center gap-3">
-          <span className="hidden sm:inline text-sm text-muted-foreground">{user.name}</span>
+          <div className="hidden sm:flex items-center gap-2">
+            <Avatar size="sm">
+              <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+            </Avatar>
+            <span className="text-sm text-muted-foreground">{user.name}</span>
+          </div>
           <Button variant="ghost" size="icon" onClick={handleLogout}>
             <LogOut className="h-5 w-5" />
           </Button>

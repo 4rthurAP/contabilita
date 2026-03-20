@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fiscalService } from '../services/fiscal.service';
+import { queryDefaults } from '@/lib/query-defaults';
 
 export function useInvoices(companyId: string, page = 1, tipo?: string) {
   return useQuery({
     queryKey: ['invoices', companyId, page, tipo],
     queryFn: () => fiscalService.getInvoices(companyId, { page, tipo }),
     enabled: !!companyId,
+    staleTime: queryDefaults.standard,
   });
 }
 
@@ -41,6 +43,7 @@ export function useTaxAssessments(companyId: string, year: number, month: number
     queryKey: ['tax-assessments', companyId, year, month],
     queryFn: () => fiscalService.getAssessments(companyId, year, month),
     enabled: !!companyId && !!year && !!month,
+    staleTime: queryDefaults.standard,
   });
 }
 
@@ -58,6 +61,7 @@ export function useTaxPayments(companyId: string, status?: string) {
     queryKey: ['tax-payments', companyId, status],
     queryFn: () => fiscalService.getPayments(companyId, status),
     enabled: !!companyId,
+    staleTime: queryDefaults.standard,
   });
 }
 

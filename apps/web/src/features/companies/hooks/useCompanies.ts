@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { companyService, CreateCompanyRequest } from '../services/company.service';
 import { useTenantStore } from '@/stores/tenant.store';
+import { queryDefaults } from '@/lib/query-defaults';
 
 export function useCompanies(page = 1, search?: string) {
   const currentTenant = useTenantStore((s) => s.currentTenant);
@@ -9,6 +10,7 @@ export function useCompanies(page = 1, search?: string) {
     queryKey: ['companies', currentTenant?._id, page, search],
     queryFn: () => companyService.list(page, 20, search),
     enabled: !!currentTenant,
+    staleTime: queryDefaults.standard,
   });
 }
 
@@ -17,6 +19,7 @@ export function useCompany(id: string) {
     queryKey: ['company', id],
     queryFn: () => companyService.getById(id),
     enabled: !!id,
+    staleTime: queryDefaults.standard,
   });
 }
 

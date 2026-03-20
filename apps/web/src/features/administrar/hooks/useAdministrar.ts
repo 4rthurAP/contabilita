@@ -1,10 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { administrarService } from '../services/administrar.service';
+import { queryDefaults } from '@/lib/query-defaults';
 
 export function useTarefas(status?: string, prioridade?: string) {
   return useQuery({
     queryKey: ['tarefas', status, prioridade],
     queryFn: () => administrarService.getTarefas({ status, prioridade }),
+    staleTime: queryDefaults.standard,
   });
 }
 
@@ -32,5 +34,6 @@ export function useProductivity(year: number, month: number) {
     queryKey: ['productivity', year, month],
     queryFn: () => administrarService.getProductivity(year, month),
     enabled: !!year && !!month,
+    staleTime: queryDefaults.standard,
   });
 }

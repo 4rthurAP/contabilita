@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { registroService } from '../services/registro.service';
+import { queryDefaults } from '@/lib/query-defaults';
 
 export function useRegistros(companyId: string, status?: string) {
   return useQuery({
     queryKey: ['registros', companyId, status],
     queryFn: () => registroService.getAll(companyId, status),
     enabled: !!companyId,
+    staleTime: queryDefaults.standard,
   });
 }
 
@@ -14,6 +16,7 @@ export function useRegistroDetail(companyId: string, id: string) {
     queryKey: ['registros', companyId, id],
     queryFn: () => registroService.getById(companyId, id),
     enabled: !!companyId && !!id,
+    staleTime: queryDefaults.standard,
   });
 }
 

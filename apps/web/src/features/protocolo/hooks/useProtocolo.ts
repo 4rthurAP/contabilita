@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { protocoloService } from '../services/protocolo.service';
+import { queryDefaults } from '@/lib/query-defaults';
 
 export function useProtocolos(companyId: string, status?: string, tipo?: string) {
   return useQuery({
     queryKey: ['protocolos', companyId, status, tipo],
     queryFn: () => protocoloService.getProtocolos(companyId, { status, tipo }),
     enabled: !!companyId,
+    staleTime: queryDefaults.standard,
   });
 }
 

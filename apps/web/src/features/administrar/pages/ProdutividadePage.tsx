@@ -33,13 +33,13 @@ export function ProdutividadePage() {
       key: 'concluidas',
       header: 'Concluidas',
       className: 'w-24 text-center',
-      render: (item) => <span className="font-mono text-green-600">{item.concluidas}</span>,
+      render: (item) => <span className="font-mono text-success">{item.concluidas}</span>,
     },
     {
       key: 'pendentes',
       header: 'Pendentes',
       className: 'w-24 text-center',
-      render: (item) => <span className="font-mono text-amber-600">{item.pendentes}</span>,
+      render: (item) => <span className="font-mono text-warning">{item.pendentes}</span>,
     },
     {
       key: 'taxa',
@@ -60,8 +60,8 @@ export function ProdutividadePage() {
       subtitle={
         <>
           <span>Total: {item.total}</span>
-          <span className="text-green-600">Concluidas: {item.concluidas}</span>
-          <span className="text-amber-600">Pendentes: {item.pendentes}</span>
+          <span className="text-success">Concluidas: {item.concluidas}</span>
+          <span className="text-warning">Pendentes: {item.pendentes}</span>
           <span>
             Taxa: {item.total > 0 ? Math.round((item.concluidas / item.total) * 100) : 0}%
           </span>

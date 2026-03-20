@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -21,6 +22,7 @@ import {
   Calculator,
   Timer,
   FileBox,
+  ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/ui.store';
@@ -118,48 +120,93 @@ const navigation: NavItem[] = [
 ];
 
 function SidebarContent({ expanded, onNavigate }: { expanded: boolean; onNavigate?: () => void }) {
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set());
+
+  const toggleSection = (href: string) => {
+    setOpenSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(href)) next.delete(href);
+      else next.add(href);
+      return next;
+    });
+  };
+
   return (
-    <nav className="flex-1 overflow-y-auto p-2">
-      {navigation.map((item) => (
-        <div key={item.href}>
-          <NavLink
-            to={item.href}
-            end={!item.children}
-            onClick={onNavigate}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors min-h-[2.75rem] md:min-h-0',
-                isActive
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-                !expanded && 'justify-center px-2',
-              )
-            }
-          >
-            <item.icon className="h-4 w-4 shrink-0" />
-            {expanded && <span>{item.name}</span>}
-          </NavLink>
-          {expanded &&
-            item.children?.map((child) => (
+    <nav className="flex-1 overflow-y-auto p-2" role="navigation" aria-label="Menu principal">
+      {navigation.map((item) => {
+        const hasChildren = !!item.children;
+        const isOpen = openSections.has(item.href);
+
+        return (
+          <div key={item.href}>
+            {hasChildren && expanded ? (
+              <button
+                onClick={() => toggleSection(item.href)}
+                aria-expanded={isOpen}
+                className={cn(
+                  'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors min-h-[2.75rem] md:min-h-0',
+                  'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                )}
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                <span className="flex-1 text-left">{item.name}</span>
+                <ChevronRight
+                  className={cn(
+                    'h-3.5 w-3.5 shrink-0 transition-transform duration-200',
+                    isOpen && 'rotate-90',
+                  )}
+                />
+              </button>
+            ) : (
               <NavLink
-                key={child.href}
-                to={child.href}
-                end
+                to={item.href}
+                end={!hasChildren}
                 onClick={onNavigate}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 rounded-md px-3 py-1.5 pl-10 text-xs transition-colors',
+                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors min-h-[2.75rem] md:min-h-0',
                     isActive
-                      ? 'text-primary font-medium'
-                      : 'text-muted-foreground hover:text-accent-foreground',
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                    !expanded && 'justify-center px-2',
                   )
                 }
               >
-                {child.name}
+                <item.icon className="h-4 w-4 shrink-0" />
+                {expanded && <span>{item.name}</span>}
               </NavLink>
-            ))}
-        </div>
-      ))}
+            )}
+
+            {expanded && hasChildren && (
+              <div
+                className={cn(
+                  'overflow-hidden transition-all duration-200',
+                  isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0',
+                )}
+              >
+                {item.children!.map((child) => (
+                  <NavLink
+                    key={child.href}
+                    to={child.href}
+                    end
+                    onClick={onNavigate}
+                    className={({ isActive }) =>
+                      cn(
+                        'flex items-center gap-3 rounded-md px-3 py-1.5 pl-10 text-xs transition-colors',
+                        isActive
+                          ? 'text-primary font-medium'
+                          : 'text-muted-foreground hover:text-accent-foreground',
+                      )
+                    }
+                  >
+                    {child.name}
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </nav>
   );
 }
@@ -212,6 +259,7 @@ export function Sidebar() {
           <span className="font-bold text-lg text-primary">Contabilita</span>
           <button
             onClick={() => setMobileSidebarOpen(false)}
+            aria-label="Fechar menu"
             className="rounded-md p-1 text-muted-foreground hover:bg-accent"
           >
             <X className="h-4 w-4" />

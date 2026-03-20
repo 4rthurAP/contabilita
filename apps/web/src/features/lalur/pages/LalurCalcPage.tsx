@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Calculator } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
@@ -50,16 +51,16 @@ function LalurCalcContent({ companyId }: { companyId: string }) {
             </div>
             <div className="space-y-1">
               <label className="text-sm font-medium">Trimestre</label>
-              <select
-                className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+              <Select
                 value={quarter}
                 onChange={(e) => setQuarter(Number(e.target.value))}
+                className="w-auto"
               >
                 <option value={1}>1o Trimestre</option>
                 <option value={2}>2o Trimestre</option>
                 <option value={3}>3o Trimestre</option>
                 <option value={4}>4o Trimestre</option>
-              </select>
+              </Select>
             </div>
             <div className="space-y-1">
               <label className="text-sm font-medium">Lucro Contabil (R$)</label>
@@ -71,9 +72,9 @@ function LalurCalcContent({ companyId }: { companyId: string }) {
                 onChange={(e) => setLucroContabil(e.target.value)}
               />
             </div>
-            <Button type="submit" disabled={calculate.isPending || !lucroContabil}>
+            <Button type="submit" loading={calculate.isPending} disabled={!lucroContabil}>
               <Calculator className="mr-2 h-4 w-4" />
-              {calculate.isPending ? 'Calculando...' : 'Calcular'}
+              Calcular
             </Button>
           </form>
         </CardContent>
@@ -90,8 +91,8 @@ function LalurCalcContent({ companyId }: { companyId: string }) {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               <ResultItem label="Lucro Contabil" value={result.lucroContabil} />
               <ResultItem label="(+) Adicoes" value={result.totalAdicoes} className="text-destructive" />
-              <ResultItem label="(-) Exclusoes" value={result.totalExclusoes} className="text-emerald-600" />
-              <ResultItem label="(-) Compensacao Prejuizos" value={result.compensacaoPrejuizos} className="text-amber-600" />
+              <ResultItem label="(-) Exclusoes" value={result.totalExclusoes} className="text-success" />
+              <ResultItem label="(-) Compensacao Prejuizos" value={result.compensacaoPrejuizos} className="text-warning" />
               <ResultItem label="Lucro Real" value={result.lucroReal} className="text-primary font-bold" />
             </div>
             <p className="mt-4 text-xs text-muted-foreground">

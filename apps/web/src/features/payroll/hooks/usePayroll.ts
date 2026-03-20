@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { payrollService } from '../services/payroll.service';
+import { queryDefaults } from '@/lib/query-defaults';
 
 export function useEmployees(companyId: string, status?: string) {
   return useQuery({
     queryKey: ['employees', companyId, status],
     queryFn: () => payrollService.getEmployees(companyId, status),
     enabled: !!companyId,
+    staleTime: queryDefaults.standard,
   });
 }
 
@@ -22,6 +24,7 @@ export function usePayrollRuns(companyId: string, year?: number) {
     queryKey: ['payroll-runs', companyId, year],
     queryFn: () => payrollService.getPayrollRuns(companyId, year),
     enabled: !!companyId,
+    staleTime: queryDefaults.standard,
   });
 }
 
@@ -55,5 +58,6 @@ export function usePayslips(companyId: string, runId: string) {
     queryKey: ['payslips', companyId, runId],
     queryFn: () => payrollService.getPayslips(companyId, runId),
     enabled: !!companyId && !!runId,
+    staleTime: queryDefaults.standard,
   });
 }

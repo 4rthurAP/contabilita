@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth.store';
 import { authService, LoginRequest, RegisterRequest } from '../services/auth.service';
+import { queryDefaults } from '@/lib/query-defaults';
 
 export function useLogin() {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ export function useProfile() {
     },
     enabled: !!localStorage.getItem('access_token'),
     retry: false,
+    staleTime: queryDefaults.standard,
   });
 }
 

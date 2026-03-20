@@ -1,15 +1,19 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Building2, Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { useTenantStore } from '@/stores/tenant.store';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 
 export function TenantSwitcher() {
   const { currentTenant, setCurrentTenant, setTenants, tenants } = useTenantStore();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
   const { data } = useQuery({
     queryKey: ['tenants'],
@@ -34,17 +38,6 @@ export function TenantSwitcher() {
     }
   }, [currentTenant]);
 
-  // Fecha dropdown ao clicar fora
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   if (tenants.length === 0) {
     return (
       <Button variant="outline" size="sm" className="gap-2 text-xs">
@@ -54,39 +47,43 @@ export function TenantSwitcher() {
     );
   }
 
-  return (
-    <div className="relative" ref={ref}>
-      <Button
-        variant="outline"
-        size="sm"
-        className="gap-2 justify-between w-full sm:w-auto sm:min-w-[11.25rem]"
-        onClick={() => tenants.length > 1 && setOpen(!open)}
-      >
+  if (tenants.length <= 1) {
+    return (
+      <Button variant="outline" size="sm" className="gap-2 justify-between w-full sm:w-auto sm:min-w-[11.25rem]">
         <Building2 className="h-3.5 w-3.5 shrink-0" />
         <span className="truncate">{currentTenant?.name || 'Selecionar'}</span>
-        {tenants.length > 1 && <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />}
       </Button>
+    );
+  }
 
-      {open && tenants.length > 1 && (
-        <div className="absolute top-full left-0 mt-1 w-full bg-popover border rounded-md shadow-md z-50">
-          {tenants.map(({ tenant }) => (
-            <button
-              key={tenant._id}
-              onClick={() => {
-                setCurrentTenant(tenant);
-                setOpen(false);
-              }}
-              className={cn(
-                'flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-accent min-h-[2.75rem]',
-                currentTenant?._id === tenant._id && 'font-medium',
-              )}
-            >
-              {currentTenant?._id === tenant._id && <Check className="h-3.5 w-3.5" />}
-              {tenant.name}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 justify-between w-full sm:w-auto sm:min-w-[11.25rem]"
+        >
+          <Building2 className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">{currentTenant?.name || 'Selecionar'}</span>
+          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)]">
+        {tenants.map(({ tenant }) => (
+          <DropdownMenuItem
+            key={tenant._id}
+            onClick={() => setCurrentTenant(tenant)}
+            className={cn(
+              'min-h-[2.75rem] md:min-h-0',
+              currentTenant?._id === tenant._id && 'font-medium',
+            )}
+          >
+            {currentTenant?._id === tenant._id && <Check className="h-3.5 w-3.5" />}
+            {tenant.name}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

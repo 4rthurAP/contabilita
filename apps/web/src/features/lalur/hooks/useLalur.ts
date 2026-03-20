@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { lalurService } from '../services/lalur.service';
+import { queryDefaults } from '@/lib/query-defaults';
 
 export function useLalurEntries(companyId: string, year: number, quarter?: number) {
   return useQuery({
     queryKey: ['lalur-entries', companyId, year, quarter],
     queryFn: () => lalurService.getEntries(companyId, year, quarter),
     enabled: !!companyId,
+    staleTime: queryDefaults.standard,
   });
 }
 
@@ -22,6 +24,7 @@ export function useLalurBalances(companyId: string, year: number) {
     queryKey: ['lalur-balances', companyId, year],
     queryFn: () => lalurService.getBalances(companyId, year),
     enabled: !!companyId,
+    staleTime: queryDefaults.standard,
   });
 }
 

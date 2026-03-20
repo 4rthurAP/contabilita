@@ -3,6 +3,8 @@ import { Clock, Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
 import { LoadingState } from '@/components/molecules/loading-state';
@@ -81,33 +83,32 @@ function TimeTrackingContent({ companyId }: { companyId: string }) {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Data</label>
+            <div className="space-y-1">
+              <Label>Data</Label>
               <Input type="date" value={data} onChange={(e) => setData(e.target.value)} required />
             </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Duracao (minutos)</label>
+            <div className="space-y-1">
+              <Label>Duracao (minutos)</Label>
               <Input type="number" placeholder="60" value={duracao} onChange={(e) => setDuracao(e.target.value)} min={1} required />
             </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Categoria</label>
-              <select
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+            <div className="space-y-1">
+              <Label>Categoria</Label>
+              <Select
                 value={categoria}
                 onChange={(e) => setCategoria(e.target.value)}
               >
                 {CATEGORIAS.map((c) => (
                   <option key={c} value={c}>{c.replace('_', ' ')}</option>
                 ))}
-              </select>
+              </Select>
             </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Descricao</label>
+            <div className="space-y-1">
+              <Label>Descricao</Label>
               <Input placeholder="Descricao da atividade" value={descricao} onChange={(e) => setDescricao(e.target.value)} />
             </div>
             <div className="flex items-end">
-              <Button type="submit" className="w-full" disabled={createEntry.isPending}>
-                {createEntry.isPending ? 'Salvando...' : 'Registrar'}
+              <Button type="submit" className="w-full" loading={createEntry.isPending}>
+                Registrar
               </Button>
             </div>
           </form>

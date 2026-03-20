@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { accountingService, Account } from '../services/accounting.service';
+import { queryDefaults } from '@/lib/query-defaults';
 
 export function useAccountTree(companyId: string) {
   return useQuery({
     queryKey: ['accounts', 'tree', companyId],
     queryFn: () => accountingService.getAccountTree(companyId),
     enabled: !!companyId,
+    staleTime: queryDefaults.reference,
   });
 }
 
@@ -14,6 +16,7 @@ export function useAnalyticalAccounts(companyId: string) {
     queryKey: ['accounts', 'analytical', companyId],
     queryFn: () => accountingService.getAnalyticalAccounts(companyId),
     enabled: !!companyId,
+    staleTime: queryDefaults.reference,
   });
 }
 
@@ -40,6 +43,7 @@ export function useJournalEntries(
         ...(endDate && { endDate }),
       }),
     enabled: !!companyId,
+    staleTime: queryDefaults.reference,
   });
 }
 
@@ -61,6 +65,7 @@ export function useLedger(
     queryKey: ['ledger', companyId, accountId, startDate, endDate],
     queryFn: () => accountingService.getLedger(companyId, accountId, startDate, endDate),
     enabled: !!companyId && !!accountId && !!startDate && !!endDate,
+    staleTime: queryDefaults.reference,
   });
 }
 
@@ -69,5 +74,6 @@ export function useTrialBalance(companyId: string, startDate: string, endDate: s
     queryKey: ['trial-balance', companyId, startDate, endDate],
     queryFn: () => accountingService.getTrialBalance(companyId, startDate, endDate),
     enabled: !!companyId && !!startDate && !!endDate,
+    staleTime: queryDefaults.reference,
   });
 }

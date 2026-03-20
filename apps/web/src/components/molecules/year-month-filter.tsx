@@ -10,7 +10,7 @@ interface YearMonthFilterProps {
 
 export function YearMonthFilter({ year, month, onYearChange, onMonthChange }: YearMonthFilterProps) {
   return (
-    <>
+    <div className="flex items-end gap-3">
       <div className="space-y-1">
         <Label className="text-xs">Ano</Label>
         <Input
@@ -31,6 +31,6 @@ export function YearMonthFilter({ year, month, onYearChange, onMonthChange }: Ye
           className="w-20"
         />
       </div>
-    </>
+    </div>
   );
 }

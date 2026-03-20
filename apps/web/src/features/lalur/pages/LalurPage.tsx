@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
 import { LoadingState } from '@/components/molecules/loading-state';
@@ -85,17 +86,17 @@ function LalurContent({ companyId }: { companyId: string }) {
         {tab === 'parte-a' && (
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium">Trimestre:</label>
-            <select
-              className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
+            <Select
               value={quarter}
               onChange={(e) => setQuarter(e.target.value)}
+              className="w-auto"
             >
               {QUARTER_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         )}
       </FilterBar>

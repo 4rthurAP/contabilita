@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import { PageHeader } from '@/components/molecules/page-header';
 import { LoadingState } from '@/components/molecules/loading-state';
 import { EmptyState } from '@/components/molecules/empty-state';
@@ -75,15 +76,15 @@ export function CustosAnalysisPage() {
         description="Custo por cliente e margem de rentabilidade"
         actions={
           <div className="flex items-center gap-2">
-            <select
-              className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+            <Select
               value={month}
               onChange={(e) => setMonth(parseInt(e.target.value, 10))}
+              className="w-auto"
             >
               {MONTH_NAMES.slice(1).map((name, i) => (
                 <option key={i + 1} value={i + 1}>{name}</option>
               ))}
-            </select>
+            </Select>
             <Button variant="outline" size="sm" onClick={() => setYear(year - 1)}>
               &larr;
             </Button>

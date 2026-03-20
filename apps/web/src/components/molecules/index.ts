@@ -1,4 +1,5 @@
 export { CompanyRequired } from './company-required';
+export { ConfirmDialog } from './confirm-dialog';
 export { DateRangeFilter } from './date-range-filter';
 export { EmptyState } from './empty-state';
 export { FormField } from './form-field';

@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { honorariosService } from '../services/honorarios.service';
+import { queryDefaults } from '@/lib/query-defaults';
 
 export function useContratos(companyId: string, status?: string) {
   return useQuery({
     queryKey: ['contratos', companyId, status],
     queryFn: () => honorariosService.getContratos(companyId, status),
     enabled: !!companyId,
+    staleTime: queryDefaults.standard,
   });
 }
 
@@ -22,6 +24,7 @@ export function useCobrancas(companyId: string, params?: Record<string, any>) {
     queryKey: ['cobrancas', companyId, params],
     queryFn: () => honorariosService.getCobrancas(companyId, params),
     enabled: !!companyId,
+    staleTime: queryDefaults.standard,
   });
 }
 
@@ -48,5 +51,6 @@ export function useCashFlow(companyId: string, year: number) {
     queryKey: ['cash-flow', companyId, year],
     queryFn: () => honorariosService.getCashFlow(companyId, year),
     enabled: !!companyId && !!year,
+    staleTime: queryDefaults.standard,
   });
 }

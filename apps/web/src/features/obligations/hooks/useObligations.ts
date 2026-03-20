@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { obligationsService } from '../services/obligations.service';
+import { queryDefaults } from '@/lib/query-defaults';
 
 export function useObligations(companyId: string, year: number) {
   return useQuery({
     queryKey: ['obligations', companyId, year],
     queryFn: () => obligationsService.getObligations(companyId, year),
     enabled: !!companyId,
+    staleTime: queryDefaults.standard,
   });
 }
 
