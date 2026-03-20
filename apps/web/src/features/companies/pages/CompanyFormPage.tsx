@@ -75,10 +75,10 @@ export function CompanyFormPage() {
       const { cnpj: _, ...updateData } = data;
       updateCompany.mutate(
         { id: id!, data: updateData as any },
-        { onSuccess: () => navigate('/companies') },
+        { onSuccess: () => navigate('/app/companies') },
       );
     } else {
-      createCompany.mutate(data as any, { onSuccess: () => navigate('/companies') });
+      createCompany.mutate(data as any, { onSuccess: () => navigate('/app/companies') });
     }
   };
 
@@ -173,7 +173,7 @@ export function CompanyFormPage() {
               <Button type="submit" disabled={isPending}>
                 {isPending ? 'Salvando...' : isEditing ? 'Atualizar' : 'Cadastrar'}
               </Button>
-              <Button type="button" variant="outline" onClick={() => navigate('/companies')}>
+              <Button type="button" variant="outline" onClick={() => navigate('/app/companies')}>
                 Cancelar
               </Button>
             </div>

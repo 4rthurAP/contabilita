@@ -14,7 +14,7 @@ export function useLogin() {
       localStorage.setItem('access_token', data.accessToken);
       localStorage.setItem('refresh_token', data.refreshToken);
       setUser(data.user);
-      navigate('/');
+      navigate('/app');
     },
   });
 }
@@ -29,7 +29,7 @@ export function useRegister() {
       localStorage.setItem('access_token', data.accessToken);
       localStorage.setItem('refresh_token', data.refreshToken);
       setUser(data.user);
-      navigate('/');
+      navigate('/app');
     },
   });
 }
