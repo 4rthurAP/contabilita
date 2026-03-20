@@ -1,76 +1,74 @@
-import { useSearchParams } from 'react-router-dom';
 import { Users } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/molecules/page-header';
+import { CompanyRequired } from '@/components/molecules/company-required';
+import { LoadingState } from '@/components/molecules/loading-state';
+import { EmptyState } from '@/components/molecules/empty-state';
+import { StatusBadge } from '@/components/molecules/status-badge';
+import { DataTable, type Column } from '@/components/organisms/data-table';
+import { ListItemCard } from '@/components/organisms/list-item-card';
+import { EMPLOYEE_STATUS_MAP } from '@/lib/constants';
 import { useEmployees } from '../hooks/usePayroll';
-import { formatCpf, formatMoeda } from '@/utils/formatters';
+import { formatCpf, formatMoeda, d128 } from '@/utils/formatters';
 import dayjs from 'dayjs';
 
-const d128 = (v: any) => parseFloat(v?.$numberDecimal || v || '0');
-
-const STATUS_BADGE: Record<string, string> = {
-  ativo: 'bg-green-100 text-green-800',
-  afastado: 'bg-yellow-100 text-yellow-800',
-  ferias: 'bg-blue-100 text-blue-800',
-  demitido: 'bg-red-100 text-red-800',
-};
-
-export function EmployeesPage() {
-  const [searchParams] = useSearchParams();
-  const companyId = searchParams.get('companyId') || '';
+function EmployeesContent({ companyId }: { companyId: string }) {
   const { data: employees, isLoading } = useEmployees(companyId);
 
-  if (!companyId) {
-    return <div className="text-muted-foreground">Selecione uma empresa (?companyId=...)</div>;
-  }
+  const columns: Column<any>[] = [
+    { key: 'nome', header: 'Nome', render: (e) => <span className="font-medium">{e.nome}</span> },
+    { key: 'cpf', header: 'CPF', className: 'w-32', hideOnMobile: true, render: (e) => <span className="font-mono text-xs">{formatCpf(e.cpf)}</span> },
+    { key: 'cargo', header: 'Cargo', hideOnMobile: true, render: (e) => e.cargo },
+    { key: 'status', header: 'Status', className: 'w-24', render: (e) => <StatusBadge status={e.status} statusMap={EMPLOYEE_STATUS_MAP} /> },
+    { key: 'salario', header: 'Salario', className: 'text-right font-mono', render: (e) => formatMoeda(d128(e.salarioBase)) },
+  ];
+
+  const renderMobileCard = (emp: any) => (
+    <ListItemCard
+      title={
+        <>
+          {emp.nome}
+          <StatusBadge status={emp.status} statusMap={EMPLOYEE_STATUS_MAP} />
+        </>
+      }
+      subtitle={
+        <>
+          <span>{formatCpf(emp.cpf)}</span>
+          <span>{emp.cargo}</span>
+          {emp.departamento && <span>{emp.departamento}</span>}
+          <span>Admissao: {dayjs(emp.dataAdmissao).format('DD/MM/YYYY')}</span>
+        </>
+      }
+      actions={
+        <div className="text-right">
+          <div className="text-sm font-medium">{formatMoeda(d128(emp.salarioBase))}</div>
+          <div className="text-xs text-muted-foreground">
+            {emp.dependentes?.length || 0} dependente(s)
+          </div>
+        </div>
+      }
+    />
+  );
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Funcionarios</h1>
-        <p className="text-muted-foreground">Cadastro de funcionarios da empresa</p>
-      </div>
+      <PageHeader title="Funcionarios" description="Cadastro de funcionarios da empresa" />
 
       {isLoading ? (
-        <div className="text-muted-foreground">Carregando...</div>
+        <LoadingState />
       ) : !employees || employees.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Users className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium">Nenhum funcionario cadastrado</p>
-          </CardContent>
-        </Card>
+        <EmptyState icon={Users} title="Nenhum funcionario cadastrado" />
       ) : (
-        <div className="grid gap-3">
-          {employees.map((emp: any) => (
-            <Card key={emp._id}>
-              <CardHeader className="py-3">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <CardTitle className="text-base flex items-center gap-3">
-                      {emp.nome}
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_BADGE[emp.status]}`}>
-                        {emp.status}
-                      </span>
-                    </CardTitle>
-                    <div className="text-xs text-muted-foreground flex gap-4">
-                      <span>{formatCpf(emp.cpf)}</span>
-                      <span>{emp.cargo}</span>
-                      {emp.departamento && <span>{emp.departamento}</span>}
-                      <span>Admissao: {dayjs(emp.dataAdmissao).format('DD/MM/YYYY')}</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-medium">{formatMoeda(d128(emp.salarioBase))}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {emp.dependentes?.length || 0} dependente(s)
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
+        <DataTable
+          columns={columns}
+          data={employees}
+          keyExtractor={(e: any) => e._id}
+          mobileCard={renderMobileCard}
+        />
       )}
     </div>
   );
+}
+
+export function EmployeesPage() {
+  return <CompanyRequired>{(companyId) => <EmployeesContent companyId={companyId} />}</CompanyRequired>;
 }

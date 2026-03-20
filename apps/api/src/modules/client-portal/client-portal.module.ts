@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ClientPortalController } from './client-portal.controller';
+import { ClientPortalService } from './client-portal.service';
 import { TenantModule } from '../tenant/tenant.module';
 import { TaxPayment, TaxPaymentSchema } from '../fiscal/schemas/tax-payment.schema';
 import { Obligation, ObligationSchema } from '../obligations/schemas/obligation.schema';
@@ -16,5 +17,6 @@ import { PayrollRun, PayrollRunSchema } from '../payroll/schemas/payroll-run.sch
     TenantModule,
   ],
   controllers: [ClientPortalController],
+  providers: [ClientPortalService],
 })
 export class ClientPortalModule {}

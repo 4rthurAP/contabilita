@@ -1,110 +1,98 @@
-import { useSearchParams } from 'react-router-dom';
 import { useState } from 'react';
-import { Check, Clock, AlertCircle } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useTaxPayments } from '../hooks/useFiscal';
-import { fiscalService } from '../services/fiscal.service';
-import { formatMoeda } from '@/utils/formatters';
-import { useQueryClient } from '@tanstack/react-query';
+import { Card } from '@/components/ui/card';
+import { PageHeader } from '@/components/molecules/page-header';
+import { CompanyRequired } from '@/components/molecules/company-required';
+import { LoadingState } from '@/components/molecules/loading-state';
+import { StatusBadge } from '@/components/molecules/status-badge';
+import { SegmentedFilter } from '@/components/molecules/segmented-filter';
+import { DataTable, type Column } from '@/components/organisms/data-table';
+import { ListItemCard } from '@/components/organisms/list-item-card';
+import { PAYMENT_STATUS_MAP, PAYMENT_STATUS_OPTIONS } from '@/lib/constants';
+import { useTaxPayments, useMarkPaid } from '../hooks/useFiscal';
+import { formatMoeda, d128 } from '@/utils/formatters';
 import dayjs from 'dayjs';
 
-const STATUS_CONFIG: Record<string, { icon: typeof Check; color: string; label: string }> = {
-  pendente: { icon: Clock, color: 'text-yellow-600', label: 'Pendente' },
-  paga: { icon: Check, color: 'text-green-600', label: 'Paga' },
-  vencida: { icon: AlertCircle, color: 'text-red-600', label: 'Vencida' },
-};
-
-const d128 = (v: any) => parseFloat(v?.$numberDecimal || v || '0');
-
-export function TaxPaymentsPage() {
-  const [searchParams] = useSearchParams();
-  const companyId = searchParams.get('companyId') || '';
+function TaxPaymentsContent({ companyId }: { companyId: string }) {
   const [statusFilter, setStatusFilter] = useState('');
   const { data: payments, isLoading } = useTaxPayments(companyId, statusFilter || undefined);
-  const qc = useQueryClient();
+  const markPaid = useMarkPaid(companyId);
 
-  const handleMarkPaid = async (id: string) => {
-    await fiscalService.markPaid(companyId, id, new Date().toISOString());
-    qc.invalidateQueries({ queryKey: ['tax-payments'] });
-  };
+  const columns: Column<any>[] = [
+    { key: 'guia', header: 'Guia', className: 'w-20', render: (p) => <span className="font-mono font-bold">{p.tipoGuia}</span> },
+    { key: 'tipo', header: 'Tipo', className: 'w-16', render: (p) => p.tipo.toUpperCase() },
+    { key: 'competencia', header: 'Competencia', className: 'w-24', hideOnMobile: true, render: (p) => p.competencia },
+    { key: 'vencimento', header: 'Vencimento', className: 'w-24', render: (p) => dayjs(p.dataVencimento).format('DD/MM/YYYY') },
+    { key: 'valor', header: 'Valor', className: 'text-right font-mono', render: (p) => formatMoeda(d128(p.valorTotal)) },
+    { key: 'status', header: 'Status', className: 'w-24', render: (p) => <StatusBadge status={p.status} statusMap={PAYMENT_STATUS_MAP} /> },
+    {
+      key: 'acoes', header: '', className: 'w-20',
+      render: (p) => p.status === 'pendente' ? (
+        <Button size="sm" variant="outline" onClick={() => markPaid.mutate(p._id)} disabled={markPaid.isPending}>
+          <Check className="mr-1 h-3.5 w-3.5" />
+          Pagar
+        </Button>
+      ) : null,
+    },
+  ];
 
-  if (!companyId) {
-    return <div className="text-muted-foreground">Selecione uma empresa (?companyId=...)</div>;
-  }
+  const renderMobileCard = (payment: any) => (
+    <ListItemCard
+      title={
+        <>
+          <span className="font-mono font-bold">{payment.tipoGuia}</span>
+          <span>{payment.tipo.toUpperCase()}</span>
+          <StatusBadge status={payment.status} statusMap={PAYMENT_STATUS_MAP} />
+        </>
+      }
+      subtitle={
+        <>
+          <span>Competencia: {payment.competencia}</span>
+          <span>Vencimento: {dayjs(payment.dataVencimento).format('DD/MM/YYYY')}</span>
+          {payment.codigoReceita && <span>Cod. Receita: {payment.codigoReceita}</span>}
+        </>
+      }
+      actions={
+        <div className="flex items-center gap-3">
+          <div className="text-sm font-medium">{formatMoeda(d128(payment.valorTotal))}</div>
+          {payment.status === 'pendente' && (
+            <Button size="sm" variant="outline" onClick={() => markPaid.mutate(payment._id)} disabled={markPaid.isPending}>
+              <Check className="mr-1 h-3.5 w-3.5" />
+              Pagar
+            </Button>
+          )}
+        </div>
+      }
+    />
+  );
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Guias de Pagamento</h1>
-        <p className="text-muted-foreground">DARF, DAS, ISS e outras guias</p>
-      </div>
+      <PageHeader title="Guias de Pagamento" description="DARF, DAS, ISS e outras guias" />
 
-      <div className="flex gap-2">
-        <Button variant={!statusFilter ? 'default' : 'outline'} size="sm" onClick={() => setStatusFilter('')}>
-          Todas
-        </Button>
-        <Button variant={statusFilter === 'pendente' ? 'default' : 'outline'} size="sm" onClick={() => setStatusFilter('pendente')}>
-          Pendentes
-        </Button>
-        <Button variant={statusFilter === 'paga' ? 'default' : 'outline'} size="sm" onClick={() => setStatusFilter('paga')}>
-          Pagas
-        </Button>
-        <Button variant={statusFilter === 'vencida' ? 'default' : 'outline'} size="sm" onClick={() => setStatusFilter('vencida')}>
-          Vencidas
-        </Button>
-      </div>
+      <SegmentedFilter options={PAYMENT_STATUS_OPTIONS} value={statusFilter} onChange={setStatusFilter} />
 
       {isLoading ? (
-        <div className="text-muted-foreground">Carregando...</div>
+        <LoadingState />
       ) : !payments || payments.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
+          <div className="py-12 text-center text-muted-foreground">
             Nenhuma guia encontrada. Apure impostos e gere as guias.
-          </CardContent>
+          </div>
         </Card>
       ) : (
-        <div className="space-y-3">
-          {payments.map((payment: any) => {
-            const cfg = STATUS_CONFIG[payment.status] || STATUS_CONFIG.pendente;
-            const Icon = cfg.icon;
-            return (
-              <Card key={payment._id}>
-                <CardHeader className="py-3">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-sm flex items-center gap-3">
-                        <span className="font-mono font-bold">{payment.tipoGuia}</span>
-                        <span>{payment.tipo.toUpperCase()}</span>
-                        <span className={`flex items-center gap-1 text-xs ${cfg.color}`}>
-                          <Icon className="h-3 w-3" />
-                          {cfg.label}
-                        </span>
-                      </CardTitle>
-                      <div className="text-xs text-muted-foreground flex gap-3">
-                        <span>Competencia: {payment.competencia}</span>
-                        <span>Vencimento: {dayjs(payment.dataVencimento).format('DD/MM/YYYY')}</span>
-                        {payment.codigoReceita && <span>Cod. Receita: {payment.codigoReceita}</span>}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <div className="text-sm font-medium">{formatMoeda(d128(payment.valorTotal))}</div>
-                      </div>
-                      {payment.status === 'pendente' && (
-                        <Button size="sm" variant="outline" onClick={() => handleMarkPaid(payment._id)}>
-                          <Check className="mr-1 h-3 w-3" />
-                          Pagar
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
-            );
-          })}
-        </div>
+        <DataTable
+          columns={columns}
+          data={payments}
+          keyExtractor={(p: any) => p._id}
+          mobileCard={renderMobileCard}
+        />
       )}
     </div>
   );
+}
+
+export function TaxPaymentsPage() {
+  return <CompanyRequired>{(companyId) => <TaxPaymentsContent companyId={companyId} />}</CompanyRequired>;
 }

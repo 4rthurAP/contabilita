@@ -10,9 +10,15 @@ export function DashboardLayout() {
   return (
     <div className="min-h-screen bg-muted/40">
       <Sidebar />
-      <div className={cn('transition-all duration-300', sidebarOpen ? 'ml-64' : 'ml-16')}>
+      <div
+        className={cn(
+          'transition-all duration-300',
+          'md:ml-16',
+          sidebarOpen && 'md:ml-64',
+        )}
+      >
         <Header />
-        <main className="p-6">
+        <main className="p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>

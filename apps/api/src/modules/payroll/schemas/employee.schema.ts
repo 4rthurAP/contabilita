@@ -76,6 +76,9 @@ export class Employee {
   @Prop({ required: true, enum: Object.values(StatusFuncionario), default: StatusFuncionario.Ativo })
   status: StatusFuncionario;
 
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', sparse: true })
+  userId: Types.ObjectId;
+
   // Dados bancarios
   @Prop(
     raw({

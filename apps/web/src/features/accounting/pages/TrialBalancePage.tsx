@@ -1,53 +1,57 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/molecules/page-header';
+import { CompanyRequired } from '@/components/molecules/company-required';
+import { LoadingState } from '@/components/molecules/loading-state';
+import { DateRangeFilter } from '@/components/molecules/date-range-filter';
+import { FilterBar } from '@/components/organisms/filter-bar';
+import { DataTable, type Column } from '@/components/organisms/data-table';
 import { useTrialBalance } from '../hooks/useAccounting';
+import { TIPO_LABELS } from '@/lib/constants';
 import { formatMoeda } from '@/utils/formatters';
+import { cn } from '@/lib/utils';
 import dayjs from 'dayjs';
 
-const TIPO_LABELS: Record<string, string> = {
-  ativo: 'Ativo',
-  passivo: 'Passivo',
-  patrimonio_liquido: 'PL',
-  receita: 'Receita',
-  despesa: 'Despesa',
-};
-
-export function TrialBalancePage() {
-  const [searchParams] = useSearchParams();
-  const companyId = searchParams.get('companyId') || '';
+function TrialBalanceContent({ companyId }: { companyId: string }) {
   const [startDate, setStartDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
   const [endDate, setEndDate] = useState(dayjs().endOf('month').format('YYYY-MM-DD'));
   const [queryDates, setQueryDates] = useState({ start: startDate, end: endDate });
 
   const { data, isLoading } = useTrialBalance(companyId, queryDates.start, queryDates.end);
 
-  if (!companyId) {
-    return <div className="text-muted-foreground">Selecione uma empresa (?companyId=...)</div>;
-  }
+  const trialColumns: Column<any>[] = [
+    { key: 'codigo', header: 'Codigo', className: 'w-20', render: (acc) => <span className="font-mono text-xs text-muted-foreground">{acc.codigo}</span> },
+    { key: 'nome', header: 'Conta', render: (acc) => acc.nome },
+    { key: 'tipo', header: 'Tipo', className: 'w-16', render: (acc) => <span className="text-xs text-muted-foreground">{TIPO_LABELS[acc.tipo] || acc.tipo}</span> },
+    { key: 'debit', header: 'Debitos', className: 'text-right font-mono', render: (acc) => formatMoeda(parseFloat(acc.totalDebit)) },
+    { key: 'credit', header: 'Creditos', className: 'text-right font-mono', render: (acc) => formatMoeda(parseFloat(acc.totalCredit)) },
+    {
+      key: 'saldo', header: 'Saldo', className: 'text-right font-mono',
+      render: (acc) => (
+        <span className={cn(acc.saldoNatureza === 'invertido' && 'text-destructive')}>
+          {formatMoeda(Math.abs(parseFloat(acc.saldo)))}
+          {acc.saldoNatureza === 'invertido' && ' (inv)'}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Balancete de Verificacao</h1>
-        <p className="text-muted-foreground">Saldos de todas as contas no periodo</p>
-      </div>
+      <PageHeader title="Balancete de Verificacao" description="Saldos de todas as contas no periodo" />
 
-      <div className="flex items-end gap-4">
-        <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">De</label>
-          <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Ate</label>
-          <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-        </div>
+      <FilterBar>
+        <DateRangeFilter
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+        />
         <Button onClick={() => setQueryDates({ start: startDate, end: endDate })}>
           Consultar
         </Button>
-      </div>
+      </FilterBar>
 
       <Card>
         <CardHeader>
@@ -58,79 +62,38 @@ export function TrialBalancePage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-muted-foreground py-8 text-center">Carregando...</div>
+            <LoadingState />
           ) : data?.accounts?.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               Nenhum lancamento no periodo
             </div>
           ) : (
-            <div className="rounded-md border">
-              <div className="grid grid-cols-12 gap-2 bg-muted/50 px-4 py-2 text-xs font-medium text-muted-foreground">
-                <div className="col-span-1">Codigo</div>
-                <div className="col-span-4">Conta</div>
-                <div className="col-span-1">Tipo</div>
-                <div className="col-span-2 text-right">Debitos</div>
-                <div className="col-span-2 text-right">Creditos</div>
-                <div className="col-span-2 text-right">Saldo</div>
-              </div>
-
-              {data?.accounts?.map((acc) => {
-                const debit = parseFloat(acc.totalDebit);
-                const credit = parseFloat(acc.totalCredit);
-                const saldo = parseFloat(acc.saldo);
-                return (
-                  <div
-                    key={acc.accountId}
-                    className="grid grid-cols-12 gap-2 px-4 py-2 border-t text-sm"
-                  >
-                    <div className="col-span-1 font-mono text-xs text-muted-foreground">
-                      {acc.codigo}
-                    </div>
-                    <div className="col-span-4">{acc.nome}</div>
-                    <div className="col-span-1 text-xs text-muted-foreground">
-                      {TIPO_LABELS[acc.tipo] || acc.tipo}
-                    </div>
-                    <div className="col-span-2 text-right font-mono">
-                      {formatMoeda(debit)}
-                    </div>
-                    <div className="col-span-2 text-right font-mono">
-                      {formatMoeda(credit)}
-                    </div>
-                    <div
-                      className={`col-span-2 text-right font-mono ${
-                        acc.saldoNatureza === 'invertido' ? 'text-destructive' : ''
-                      }`}
-                    >
-                      {formatMoeda(Math.abs(saldo))}
-                      {acc.saldoNatureza === 'invertido' && ' (inv)'}
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* Totais */}
-              {data?.totals && (
-                <div className="grid grid-cols-12 gap-2 bg-muted/50 px-4 py-2 border-t font-semibold text-sm">
-                  <div className="col-span-6 text-right">TOTAIS</div>
-                  <div className="col-span-2 text-right font-mono">
-                    {formatMoeda(parseFloat(data.totals.totalDebit))}
-                  </div>
-                  <div className="col-span-2 text-right font-mono">
-                    {formatMoeda(parseFloat(data.totals.totalCredit))}
-                  </div>
-                  <div className="col-span-2 text-right">
+            <DataTable
+              columns={trialColumns}
+              data={data?.accounts || []}
+              keyExtractor={(acc: any) => acc.accountId}
+              footer={data?.totals ? (
+                <>
+                  <td colSpan={3} className="px-4 py-2.5 text-right">TOTAIS</td>
+                  <td className="px-4 py-2.5 text-right font-mono">{formatMoeda(parseFloat(data.totals.totalDebit))}</td>
+                  <td className="px-4 py-2.5 text-right font-mono">{formatMoeda(parseFloat(data.totals.totalCredit))}</td>
+                  <td className="px-4 py-2.5 text-right">
                     {data.totals.balanced ? (
-                      <span className="text-green-600 text-xs">Balanceado</span>
+                      <span className="text-success text-xs">Balanceado</span>
                     ) : (
                       <span className="text-destructive text-xs">Desbalanceado!</span>
                     )}
-                  </div>
-                </div>
-              )}
-            </div>
+                  </td>
+                </>
+              ) : undefined}
+            />
           )}
         </CardContent>
       </Card>
     </div>
   );
+}
+
+export function TrialBalancePage() {
+  return <CompanyRequired>{(companyId) => <TrialBalanceContent companyId={companyId} />}</CompanyRequired>;
 }

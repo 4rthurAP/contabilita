@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Building2, Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { useTenantStore } from '@/stores/tenant.store';
@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 
 export function TenantSwitcher() {
   const { currentTenant, setCurrentTenant, setTenants, tenants } = useTenantStore();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   const { data } = useQuery({
     queryKey: ['tenants'],
@@ -17,7 +19,6 @@ export function TenantSwitcher() {
   useEffect(() => {
     if (data) {
       setTenants(data);
-      // Seleciona o primeiro tenant se nenhum estiver selecionado
       if (!currentTenant && data.length > 0) {
         setCurrentTenant(data[0].tenant);
       }
@@ -33,36 +34,54 @@ export function TenantSwitcher() {
     }
   }, [currentTenant]);
 
+  // Fecha dropdown ao clicar fora
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   if (tenants.length === 0) {
     return (
       <Button variant="outline" size="sm" className="gap-2 text-xs">
-        <Plus className="h-3 w-3" />
-        Criar escritorio
+        <Plus className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">Criar escritorio</span>
       </Button>
     );
   }
 
   return (
-    <div className="relative">
-      <Button variant="outline" size="sm" className="gap-2 justify-between min-w-[180px]">
-        <Building2 className="h-3.5 w-3.5" />
+    <div className="relative" ref={ref}>
+      <Button
+        variant="outline"
+        size="sm"
+        className="gap-2 justify-between w-full sm:w-auto sm:min-w-[11.25rem]"
+        onClick={() => tenants.length > 1 && setOpen(!open)}
+      >
+        <Building2 className="h-3.5 w-3.5 shrink-0" />
         <span className="truncate">{currentTenant?.name || 'Selecionar'}</span>
-        <ChevronsUpDown className="h-3 w-3 opacity-50" />
+        {tenants.length > 1 && <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />}
       </Button>
 
-      {/* Dropdown simples — sera substituido por Radix Popover na Fase 2+ */}
-      {tenants.length > 1 && (
-        <div className="absolute top-full left-0 mt-1 w-full bg-popover border rounded-md shadow-md z-50 hidden group-hover:block">
+      {open && tenants.length > 1 && (
+        <div className="absolute top-full left-0 mt-1 w-full bg-popover border rounded-md shadow-md z-50">
           {tenants.map(({ tenant }) => (
             <button
               key={tenant._id}
-              onClick={() => setCurrentTenant(tenant)}
+              onClick={() => {
+                setCurrentTenant(tenant);
+                setOpen(false);
+              }}
               className={cn(
-                'flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-accent',
+                'flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors hover:bg-accent min-h-[2.75rem]',
                 currentTenant?._id === tenant._id && 'font-medium',
               )}
             >
-              {currentTenant?._id === tenant._id && <Check className="h-3 w-3" />}
+              {currentTenant?._id === tenant._id && <Check className="h-3.5 w-3.5" />}
               {tenant.name}
             </button>
           ))}

@@ -19,6 +19,14 @@ export function formatMoeda(value: number | string): string {
   });
 }
 
+/** Converte Decimal128 do MongoDB para number */
+export function parseDecimal128(value: any): number {
+  return parseFloat(value?.$numberDecimal || value || '0');
+}
+
+/** Alias curto para parseDecimal128 */
+export const d128 = parseDecimal128;
+
 /** Formata CEP: 00000-000 */
 export function formatCep(cep: string): string {
   const digits = cep.replace(/\D/g, '');

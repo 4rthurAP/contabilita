@@ -61,6 +61,15 @@ export function useTaxPayments(companyId: string, status?: string) {
   });
 }
 
+export function useMarkPaid(companyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fiscalService.markPaid(companyId, id, new Date().toISOString()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['tax-payments'] }),
+  });
+}
+
 export function useGeneratePayments(companyId: string) {
   const qc = useQueryClient();
   return useMutation({

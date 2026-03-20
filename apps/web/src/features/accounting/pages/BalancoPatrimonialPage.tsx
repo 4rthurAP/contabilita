@@ -1,71 +1,47 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { api } from '@/lib/api';
-import { formatMoeda } from '@/utils/formatters';
+import { Label } from '@/components/ui/label';
+import { PageHeader } from '@/components/molecules/page-header';
+import { CompanyRequired } from '@/components/molecules/company-required';
+import { LoadingState } from '@/components/molecules/loading-state';
+import { useBalancoPatrimonial } from '@/features/reports/hooks/useReports';
+import { BalancoSection } from '../components/balanco-section';
 import dayjs from 'dayjs';
 
-export function BalancoPatrimonialPage() {
-  const [searchParams] = useSearchParams();
-  const companyId = searchParams.get('companyId') || '';
+function BalancoContent({ companyId }: { companyId: string }) {
   const [endDate, setEndDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [queryDate, setQueryDate] = useState(endDate);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['balanco', companyId, queryDate],
-    queryFn: () => api.get(`/companies/${companyId}/reports/balanco-patrimonial`, { params: { endDate: queryDate } }).then((r) => r.data),
-    enabled: !!companyId && !!queryDate,
-  });
-
-  if (!companyId) return <div className="text-muted-foreground">Selecione uma empresa (?companyId=...)</div>;
-
-  const renderSection = (title: string, section: any, color: string) => (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className={`text-base ${color}`}>{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {section?.accounts?.map((acc: any) => (
-          <div key={acc.accountId} className="flex justify-between py-1 text-sm border-b last:border-0">
-            <span><span className="text-xs font-mono text-muted-foreground mr-2">{acc.codigo}</span>{acc.nome}</span>
-            <span className="font-mono">{formatMoeda(parseFloat(acc.saldo))}</span>
-          </div>
-        ))}
-        <div className="flex justify-between pt-2 font-semibold text-sm border-t mt-2">
-          <span>Total {title}</span>
-          <span className="font-mono">{formatMoeda(parseFloat(section?.total || '0'))}</span>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  const { data, isLoading } = useBalancoPatrimonial(companyId, queryDate);
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold tracking-tight">Balanco Patrimonial</h1></div>
-      <div className="flex items-end gap-4">
+      <PageHeader title="Balanco Patrimonial" />
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
         <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Data base</label>
+          <Label className="text-xs">Data base</Label>
           <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
         </div>
         <Button onClick={() => setQueryDate(endDate)}>Gerar</Button>
       </div>
 
-      {isLoading ? <div className="text-muted-foreground">Carregando...</div> : data && (
+      {isLoading ? (
+        <LoadingState />
+      ) : data && (
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-4">
-            {renderSection('Ativo', data.ativo, 'text-blue-700')}
+            <BalancoSection title="Ativo" section={data.ativo} className="text-info" />
           </div>
           <div className="space-y-4">
-            {renderSection('Passivo', data.passivo, 'text-red-700')}
-            {renderSection('Patrimonio Liquido', data.patrimonioLiquido, 'text-green-700')}
+            <BalancoSection title="Passivo" section={data.passivo} className="text-credit" />
+            <BalancoSection title="Patrimonio Liquido" section={data.patrimonioLiquido} className="text-success" />
             <div className="text-center text-sm">
               {data.balanced ? (
-                <span className="text-green-600 font-medium">Ativo = Passivo + PL (Balanceado)</span>
+                <span className="text-success font-medium">Ativo = Passivo + PL (Balanceado)</span>
               ) : (
-                <span className="text-red-600 font-medium">Desbalanceado!</span>
+                <span className="text-destructive font-medium">Desbalanceado!</span>
               )}
             </div>
           </div>
@@ -73,4 +49,8 @@ export function BalancoPatrimonialPage() {
       )}
     </div>
   );
+}
+
+export function BalancoPatrimonialPage() {
+  return <CompanyRequired>{(companyId) => <BalancoContent companyId={companyId} />}</CompanyRequired>;
 }

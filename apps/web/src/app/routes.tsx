@@ -22,6 +22,22 @@ import { DREPage } from '@/features/accounting/pages/DREPage';
 import { ObligationsPage } from '@/features/obligations/pages/ObligationsPage';
 import { TaxUpdatePage } from '@/features/tax-update/pages/TaxUpdatePage';
 import { AuditPage } from '@/features/audit/pages/AuditPage';
+import { LalurPage } from '@/features/lalur/pages/LalurPage';
+import { LalurCalcPage } from '@/features/lalur/pages/LalurCalcPage';
+import { ClientPortalPage } from '@/features/client-portal/pages/ClientPortalPage';
+import { RegistroPage } from '@/features/registro/pages/RegistroPage';
+import { RegistroDetailPage } from '@/features/registro/pages/RegistroDetailPage';
+import { TarefasPage } from '@/features/administrar/pages/TarefasPage';
+import { ProdutividadePage } from '@/features/administrar/pages/ProdutividadePage';
+import { BuscaNfePage } from '@/features/busca-nfe/pages/BuscaNfePage';
+import { ContratosPage } from '@/features/honorarios/pages/ContratosPage';
+import { CobrancasPage } from '@/features/honorarios/pages/CobrancasPage';
+import { FluxoCaixaPage } from '@/features/honorarios/pages/FluxoCaixaPage';
+import { EmployeePortalPage } from '@/features/employee-portal/pages/EmployeePortalPage';
+import { CctPage } from '@/features/cct/pages/CctPage';
+import { TimeTrackingPage } from '@/features/custos/pages/TimeTrackingPage';
+import { CustosAnalysisPage } from '@/features/custos/pages/CustosAnalysisPage';
+import { ProtocoloPage } from '@/features/protocolo/pages/ProtocoloPage';
 
 export function AppRoutes() {
   return (
@@ -74,8 +90,47 @@ export function AppRoutes() {
         {/* Atualizar Impostos */}
         <Route path="tax-update" element={<TaxUpdatePage />} />
 
+        {/* LALUR */}
+        <Route path="lalur" element={<LalurPage />} />
+        <Route path="lalur/calculate" element={<LalurCalcPage />} />
+
+        {/* Portal do Cliente */}
+        <Route path="portal" element={<ClientPortalPage />} />
+
         {/* Auditoria */}
         <Route path="audit" element={<AuditPage />} />
+
+        {/* Registro */}
+        <Route path="registro" element={<RegistroPage />} />
+        <Route path="registro/:id" element={<RegistroDetailPage />} />
+
+        {/* Administrar */}
+        <Route path="administrar" element={<TarefasPage />} />
+        <Route path="administrar/tarefas" element={<TarefasPage />} />
+        <Route path="administrar/produtividade" element={<ProdutividadePage />} />
+
+        {/* Honorarios */}
+        <Route path="honorarios" element={<ContratosPage />} />
+        <Route path="honorarios/contratos" element={<ContratosPage />} />
+        <Route path="honorarios/cobrancas" element={<CobrancasPage />} />
+        <Route path="honorarios/fluxo-caixa" element={<FluxoCaixaPage />} />
+
+        {/* Portal do Empregado */}
+        <Route path="employee-portal" element={<EmployeePortalPage />} />
+
+        {/* CCT */}
+        <Route path="cct" element={<CctPage />} />
+
+        {/* Custos */}
+        <Route path="custos" element={<TimeTrackingPage />} />
+        <Route path="custos/time-tracking" element={<TimeTrackingPage />} />
+        <Route path="custos/analysis" element={<CustosAnalysisPage />} />
+
+        {/* Protocolo */}
+        <Route path="protocolo" element={<ProtocoloPage />} />
+
+        {/* Busca NF-e */}
+        <Route path="busca-nfe" element={<BuscaNfePage />} />
       </Route>
     </Routes>
   );

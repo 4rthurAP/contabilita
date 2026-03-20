@@ -1,9 +1,14 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { Plus, Calculator, Check, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/molecules/page-header';
+import { CompanyRequired } from '@/components/molecules/company-required';
+import { LoadingState } from '@/components/molecules/loading-state';
+import { StatusBadge } from '@/components/molecules/status-badge';
+import { PAYROLL_STATUS_MAP } from '@/lib/constants';
+import { PayslipDetail } from '../components/payslip-detail';
 import {
   usePayrollRuns,
   useCreatePayrollRun,
@@ -11,20 +16,9 @@ import {
   useApprovePayroll,
   usePayslips,
 } from '../hooks/usePayroll';
-import { formatMoeda } from '@/utils/formatters';
+import { formatMoeda, d128 } from '@/utils/formatters';
 
-const d128 = (v: any) => parseFloat(v?.$numberDecimal || v || '0');
-
-const STATUS_BADGE: Record<string, string> = {
-  rascunho: 'bg-gray-100 text-gray-800',
-  calculada: 'bg-blue-100 text-blue-800',
-  aprovada: 'bg-green-100 text-green-800',
-  fechada: 'bg-purple-100 text-purple-800',
-};
-
-export function PayrollRunsPage() {
-  const [searchParams] = useSearchParams();
-  const companyId = searchParams.get('companyId') || '';
+function PayrollRunsContent({ companyId }: { companyId: string }) {
   const now = new Date();
   const [newYear, setNewYear] = useState(now.getFullYear());
   const [newMonth, setNewMonth] = useState(now.getMonth() + 1);
@@ -36,29 +30,25 @@ export function PayrollRunsPage() {
   const approveRun = useApprovePayroll(companyId);
   const { data: payslips } = usePayslips(companyId, expandedRun || '');
 
-  if (!companyId) {
-    return <div className="text-muted-foreground">Selecione uma empresa (?companyId=...)</div>;
-  }
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Folha de Pagamento</h1>
-          <p className="text-muted-foreground">Execucao mensal da folha</p>
-        </div>
-        <div className="flex items-end gap-2">
-          <Input type="number" value={newYear} onChange={(e) => setNewYear(+e.target.value)} className="w-20" />
-          <Input type="number" min={1} max={12} value={newMonth} onChange={(e) => setNewMonth(+e.target.value)} className="w-16" />
-          <Button onClick={() => createRun.mutate({ year: newYear, month: newMonth })} disabled={createRun.isPending}>
-            <Plus className="mr-2 h-4 w-4" />
-            Criar Folha
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Folha de Pagamento"
+        description="Execucao mensal da folha"
+        actions={
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+            <Input type="number" value={newYear} onChange={(e) => setNewYear(+e.target.value)} className="w-20" />
+            <Input type="number" min={1} max={12} value={newMonth} onChange={(e) => setNewMonth(+e.target.value)} className="w-16" />
+            <Button onClick={() => createRun.mutate({ year: newYear, month: newMonth })} disabled={createRun.isPending}>
+              <Plus className="mr-2 h-4 w-4" />
+              Criar Folha
+            </Button>
+          </div>
+        }
+      />
 
       {isLoading ? (
-        <div className="text-muted-foreground">Carregando...</div>
+        <LoadingState />
       ) : !runs || runs.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
@@ -70,18 +60,14 @@ export function PayrollRunsPage() {
           {runs.map((run: any) => (
             <Card key={run._id}>
               <CardHeader className="py-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-1">
-                    <CardTitle className="text-base flex items-center gap-3">
-                      <span>
-                        {String(run.month).padStart(2, '0')}/{run.year} - {run.tipo}
-                      </span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_BADGE[run.status]}`}>
-                        {run.status}
-                      </span>
+                    <CardTitle className="text-base flex flex-wrap items-center gap-2">
+                      <span>{String(run.month).padStart(2, '0')}/{run.year} - {run.tipo}</span>
+                      <StatusBadge status={run.status} statusMap={PAYROLL_STATUS_MAP} />
                     </CardTitle>
                     {run.totalFuncionarios > 0 && (
-                      <div className="text-xs text-muted-foreground flex gap-4">
+                      <div className="text-xs text-muted-foreground flex flex-wrap gap-3">
                         <span>{run.totalFuncionarios} funcionario(s)</span>
                         <span>Bruto: {formatMoeda(d128(run.totalBruto))}</span>
                         <span>Liquido: {formatMoeda(d128(run.totalLiquido))}</span>
@@ -94,25 +80,25 @@ export function PayrollRunsPage() {
                   <div className="flex gap-2">
                     {run.status === 'rascunho' && (
                       <Button size="sm" onClick={() => calculateRun.mutate(run._id)} disabled={calculateRun.isPending}>
-                        <Calculator className="mr-1 h-3 w-3" />
+                        <Calculator className="mr-1 h-3.5 w-3.5" />
                         Calcular
                       </Button>
                     )}
                     {run.status === 'calculada' && (
                       <>
                         <Button size="sm" variant="outline" onClick={() => setExpandedRun(expandedRun === run._id ? null : run._id)}>
-                          <FileText className="mr-1 h-3 w-3" />
+                          <FileText className="mr-1 h-3.5 w-3.5" />
                           Holerites
                         </Button>
                         <Button size="sm" onClick={() => approveRun.mutate(run._id)} disabled={approveRun.isPending}>
-                          <Check className="mr-1 h-3 w-3" />
+                          <Check className="mr-1 h-3.5 w-3.5" />
                           Aprovar
                         </Button>
                       </>
                     )}
                     {run.status === 'aprovada' && (
                       <Button size="sm" variant="outline" onClick={() => setExpandedRun(expandedRun === run._id ? null : run._id)}>
-                        <FileText className="mr-1 h-3 w-3" />
+                        <FileText className="mr-1 h-3.5 w-3.5" />
                         Holerites
                       </Button>
                     )}
@@ -120,31 +106,9 @@ export function PayrollRunsPage() {
                 </div>
               </CardHeader>
 
-              {/* Holerites expandidos */}
               {expandedRun === run._id && payslips && (
                 <CardContent className="pt-0 space-y-2">
-                  <div className="border-t pt-3">
-                    {payslips.map((ps: any) => (
-                      <div key={ps._id} className="rounded border p-3 mb-2">
-                        <div className="flex justify-between mb-2">
-                          <span className="font-medium text-sm">{ps.employeeName}</span>
-                          <span className="text-sm font-mono">{formatMoeda(d128(ps.salarioLiquido))}</span>
-                        </div>
-                        <div className="text-xs space-y-0.5">
-                          {ps.lines?.map((line: any, i: number) => (
-                            <div key={i} className="flex justify-between">
-                              <span className={line.tipo === 'desconto' ? 'text-red-600' : line.tipo === 'informativa' ? 'text-muted-foreground' : ''}>
-                                {line.codigo} - {line.descricao}
-                              </span>
-                              <span className={line.tipo === 'desconto' ? 'text-red-600' : line.tipo === 'informativa' ? 'text-muted-foreground' : ''}>
-                                {line.tipo === 'desconto' ? '-' : ''}{formatMoeda(d128(line.valor))}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <PayslipDetail payslips={payslips} />
                 </CardContent>
               )}
             </Card>
@@ -153,4 +117,8 @@ export function PayrollRunsPage() {
       )}
     </div>
   );
+}
+
+export function PayrollRunsPage() {
+  return <CompanyRequired>{(companyId) => <PayrollRunsContent companyId={companyId} />}</CompanyRequired>;
 }

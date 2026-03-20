@@ -1,31 +1,17 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { Calculator, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import {
-  useTaxAssessments,
-  useRecalculateAssessments,
-  useGeneratePayments,
-} from '../hooks/useFiscal';
-import { formatMoeda } from '@/utils/formatters';
+import { PageHeader } from '@/components/molecules/page-header';
+import { CompanyRequired } from '@/components/molecules/company-required';
+import { LoadingState } from '@/components/molecules/loading-state';
+import { YearMonthFilter } from '@/components/molecules/year-month-filter';
+import { FilterBar } from '@/components/organisms/filter-bar';
+import { IMPOSTO_LABELS } from '@/lib/constants';
+import { useTaxAssessments, useRecalculateAssessments, useGeneratePayments } from '../hooks/useFiscal';
+import { formatMoeda, d128 } from '@/utils/formatters';
 
-const IMPOSTO_LABELS: Record<string, string> = {
-  icms: 'ICMS',
-  ipi: 'IPI',
-  pis: 'PIS',
-  cofins: 'COFINS',
-  iss: 'ISS',
-  irpj: 'IRPJ',
-  csll: 'CSLL',
-};
-
-const d128 = (v: any) => parseFloat(v?.$numberDecimal || v || '0');
-
-export function TaxAssessmentPage() {
-  const [searchParams] = useSearchParams();
-  const companyId = searchParams.get('companyId') || '';
+function TaxAssessmentContent({ companyId }: { companyId: string }) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -34,91 +20,51 @@ export function TaxAssessmentPage() {
   const recalculate = useRecalculateAssessments(companyId);
   const generatePayments = useGeneratePayments(companyId);
 
-  if (!companyId) {
-    return <div className="text-muted-foreground">Selecione uma empresa (?companyId=...)</div>;
-  }
-
-  const totalRecolher = assessments?.reduce(
-    (sum: number, a: any) => sum + d128(a.valorRecolher),
-    0,
-  ) || 0;
+  const totalRecolher = assessments?.reduce((sum: number, a: any) => sum + d128(a.valorRecolher), 0) || 0;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Apuracao Fiscal</h1>
-          <p className="text-muted-foreground">Apuracao mensal de impostos</p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => recalculate.mutate({ year, month })}
-            disabled={recalculate.isPending}
-          >
-            <Calculator className="mr-2 h-4 w-4" />
-            {recalculate.isPending ? 'Calculando...' : 'Recalcular'}
-          </Button>
-          <Button
-            onClick={() => generatePayments.mutate({ year, month })}
-            disabled={generatePayments.isPending}
-          >
-            <Receipt className="mr-2 h-4 w-4" />
-            {generatePayments.isPending ? 'Gerando...' : 'Gerar Guias'}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Apuracao Fiscal"
+        description="Apuracao mensal de impostos"
+        actions={
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => recalculate.mutate({ year, month })} disabled={recalculate.isPending}>
+              <Calculator className="mr-2 h-4 w-4" />
+              {recalculate.isPending ? 'Calculando...' : 'Recalcular'}
+            </Button>
+            <Button onClick={() => generatePayments.mutate({ year, month })} disabled={generatePayments.isPending}>
+              <Receipt className="mr-2 h-4 w-4" />
+              {generatePayments.isPending ? 'Gerando...' : 'Gerar Guias'}
+            </Button>
+          </div>
+        }
+      />
 
-      <div className="flex items-end gap-4">
-        <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Ano</label>
-          <Input
-            type="number"
-            value={year}
-            onChange={(e) => setYear(parseInt(e.target.value))}
-            className="w-24"
-          />
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Mes</label>
-          <Input
-            type="number"
-            min={1}
-            max={12}
-            value={month}
-            onChange={(e) => setMonth(parseInt(e.target.value))}
-            className="w-20"
-          />
-        </div>
-      </div>
+      <FilterBar>
+        <YearMonthFilter year={year} month={month} onYearChange={setYear} onMonthChange={setMonth} />
+      </FilterBar>
 
       {isLoading ? (
-        <div className="text-muted-foreground">Carregando...</div>
+        <LoadingState />
       ) : !assessments || assessments.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            Nenhuma apuracao para {String(month).padStart(2, '0')}/{year}.
-            Escriture notas fiscais e recalcule.
+            Nenhuma apuracao para {String(month).padStart(2, '0')}/{year}. Escriture notas fiscais e recalcule.
           </CardContent>
         </Card>
       ) : (
         <>
-          {/* Resumo */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">
-                Competencia: {String(month).padStart(2, '0')}/{year}
-              </CardTitle>
+              <CardTitle className="text-base">Competencia: {String(month).padStart(2, '0')}/{year}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                Total a recolher: {formatMoeda(totalRecolher)}
-              </div>
+              <div className="text-2xl font-bold">Total a recolher: {formatMoeda(totalRecolher)}</div>
             </CardContent>
           </Card>
 
-          {/* Detalhamento por imposto */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {assessments.map((assessment: any) => {
               const apurado = d128(assessment.valorApurado);
               const creditos = d128(assessment.creditos);
@@ -138,7 +84,7 @@ export function TaxAssessmentPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Creditos (entradas)</span>
-                      <span className="text-green-600">-{formatMoeda(creditos)}</span>
+                      <span className="text-success">-{formatMoeda(creditos)}</span>
                     </div>
                     <div className="flex justify-between font-medium border-t pt-1">
                       <span>A recolher</span>
@@ -153,4 +99,8 @@ export function TaxAssessmentPage() {
       )}
     </div>
   );
+}
+
+export function TaxAssessmentPage() {
+  return <CompanyRequired>{(companyId) => <TaxAssessmentContent companyId={companyId} />}</CompanyRequired>;
 }

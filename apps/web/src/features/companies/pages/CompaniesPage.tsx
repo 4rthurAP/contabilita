@@ -3,17 +3,16 @@ import { Link } from 'react-router-dom';
 import { Plus, Search, Building2, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/molecules/page-header';
+import { LoadingState } from '@/components/molecules/loading-state';
+import { EmptyState } from '@/components/molecules/empty-state';
+import { Pagination } from '@/components/molecules/pagination';
+import { DataTable, type Column } from '@/components/organisms/data-table';
+import { ListItemCard } from '@/components/organisms/list-item-card';
+import { REGIME_LABELS } from '@/lib/constants';
 import { useCompanies, useDeleteCompany } from '../hooks/useCompanies';
 import { formatCnpj } from '@/utils/formatters';
-
-const REGIME_LABELS: Record<string, string> = {
-  simples_nacional: 'Simples Nacional',
-  lucro_presumido: 'Lucro Presumido',
-  lucro_real: 'Lucro Real',
-  imune: 'Imune',
-  isenta: 'Isenta',
-};
 
 export function CompaniesPage() {
   const [search, setSearch] = useState('');
@@ -21,20 +20,62 @@ export function CompaniesPage() {
   const { data, isLoading } = useCompanies(page, search || undefined);
   const deleteCompany = useDeleteCompany();
 
+  const columns: Column<any>[] = [
+    { key: 'razaoSocial', header: 'Razao Social', render: (c) => <span className="font-medium">{c.razaoSocial}</span> },
+    { key: 'cnpj', header: 'CNPJ', className: 'w-36', hideOnMobile: true, render: (c) => <span className="font-mono text-xs">{formatCnpj(c.cnpj)}</span> },
+    { key: 'regime', header: 'Regime', className: 'w-36', hideOnMobile: true, render: (c) => <Badge variant="neutral">{REGIME_LABELS[c.regimeTributario] || c.regimeTributario}</Badge> },
+    {
+      key: 'acoes', header: '', className: 'w-24',
+      render: (c) => (
+        <div className="flex items-center gap-2">
+          <Link to={`/companies/${c._id}/edit`}>
+            <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
+          </Link>
+          <Button variant="ghost" size="icon" onClick={() => { if (confirm('Tem certeza que deseja remover esta empresa?')) deleteCompany.mutate(c._id); }}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  const renderMobileCard = (company: any) => (
+    <ListItemCard
+      title={company.razaoSocial}
+      subtitle={
+        <>
+          <span>{formatCnpj(company.cnpj)}</span>
+          <Badge variant="neutral">{REGIME_LABELS[company.regimeTributario] || company.regimeTributario}</Badge>
+          {company.nomeFantasia && <span>{company.nomeFantasia}</span>}
+        </>
+      }
+      actions={
+        <div className="flex items-center gap-2">
+          <Link to={`/companies/${company._id}/edit`}>
+            <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
+          </Link>
+          <Button variant="ghost" size="icon" onClick={() => { if (confirm('Tem certeza que deseja remover esta empresa?')) deleteCompany.mutate(company._id); }}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      }
+    />
+  );
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Empresas</h1>
-          <p className="text-muted-foreground">Gerencie as empresas do escritorio</p>
-        </div>
-        <Link to="/companies/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nova Empresa
-          </Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="Empresas"
+        description="Gerencie as empresas do escritorio"
+        actions={
+          <Link to="/companies/new">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Empresa
+            </Button>
+          </Link>
+        }
+      />
 
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
@@ -52,83 +93,30 @@ export function CompaniesPage() {
       </div>
 
       {isLoading ? (
-        <div className="text-muted-foreground">Carregando...</div>
+        <LoadingState />
       ) : data?.data.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium">Nenhuma empresa cadastrada</p>
-            <p className="text-muted-foreground mb-4">Comece cadastrando a primeira empresa</p>
+        <EmptyState
+          icon={Building2}
+          title="Nenhuma empresa cadastrada"
+          description="Comece cadastrando a primeira empresa"
+          action={
             <Link to="/companies/new">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
                 Nova Empresa
               </Button>
             </Link>
-          </CardContent>
-        </Card>
+          }
+        />
       ) : (
         <>
-          <div className="grid gap-4">
-            {data?.data.map((company) => (
-              <Card key={company._id}>
-                <CardHeader className="flex flex-row items-center justify-between py-4">
-                  <div className="space-y-1">
-                    <CardTitle className="text-base">{company.razaoSocial}</CardTitle>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{formatCnpj(company.cnpj)}</span>
-                      <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium">
-                        {REGIME_LABELS[company.regimeTributario] || company.regimeTributario}
-                      </span>
-                      {company.nomeFantasia && <span>{company.nomeFantasia}</span>}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Link to={`/companies/${company._id}/edit`}>
-                      <Button variant="ghost" size="icon">
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        if (confirm('Tem certeza que deseja remover esta empresa?')) {
-                          deleteCompany.mutate(company._id);
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-
-          {data && data.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page === 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                Anterior
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                Pagina {page} de {data.totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page === data.totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Proxima
-              </Button>
-            </div>
-          )}
+          <DataTable
+            columns={columns}
+            data={data?.data || []}
+            keyExtractor={(c: any) => c._id}
+            mobileCard={renderMobileCard}
+          />
+          <Pagination page={page} totalPages={data?.totalPages || 1} onPageChange={setPage} />
         </>
       )}
     </div>

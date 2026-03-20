@@ -15,7 +15,26 @@
       "Bash(pnpm install:*)",
       "Bash(pnpm approve-builds:*)",
       "Bash(chmod +x .husky/commit-msg)",
-      "Bash(pnpm:*)"
+      "Bash(pnpm:*)",
+      "Bash(for d:*)",
+      "Bash(do echo:*)",
+      "Read(//mnt/e/GitPessoal/contabilita/apps/web/src/features/**)",
+      "Bash(done)",
+      "Bash(wc -l /mnt/e/GitPessoal/contabilita/apps/web/src/features/*/pages/*.tsx)",
+      "Bash(grep:*)",
+      "Bash(__NEW_LINE_9bc4ed37168cbda1__ done:*)",
+      "Bash(git stash:*)",
+      "Bash(for mod:*)",
+      "Read(//mnt/e/GitPessoal/contabilita/apps/api/src/modules/**)",
+      "Bash(for feat:*)",
+      "Bash(ls packages/shared/src/enums/*.enums.ts)",
+      "Bash(ls packages/shared/src/constants/*.ts)",
+      "Bash(find /mnt/e/GitPessoal/contabilita -name *nginx* -type f)",
+      "Bash(npx --prefix apps/api jest --config apps/api/jest.config.js --verbose)",
+      "Bash(npx jest:*)",
+      "Bash(git reset:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

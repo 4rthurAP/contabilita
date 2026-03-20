@@ -1,96 +1,88 @@
-import { useSearchParams } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { api } from '@/lib/api';
-import { formatMoeda } from '@/utils/formatters';
+import { PageHeader } from '@/components/molecules/page-header';
+import { CompanyRequired } from '@/components/molecules/company-required';
+import { LoadingState } from '@/components/molecules/loading-state';
+import { EmptyState } from '@/components/molecules/empty-state';
+import { StatusBadge } from '@/components/molecules/status-badge';
+import { DataTable, type Column } from '@/components/organisms/data-table';
+import { ListItemCard } from '@/components/organisms/list-item-card';
+import { ASSET_STATUS_MAP } from '@/lib/constants';
+import { useAssets, useDepreciateAssets } from '../hooks/useAssets';
+import { formatMoeda, d128 } from '@/utils/formatters';
 import dayjs from 'dayjs';
 
-const d128 = (v: any) => parseFloat(v?.$numberDecimal || v || '0');
+function AssetsContent({ companyId }: { companyId: string }) {
+  const { data: assets, isLoading } = useAssets(companyId);
+  const now = new Date();
+  const depreciate = useDepreciateAssets(companyId);
 
-const STATUS_BADGE: Record<string, string> = {
-  ativo: 'bg-green-100 text-green-800',
-  baixado: 'bg-red-100 text-red-800',
-  transferido: 'bg-blue-100 text-blue-800',
-};
+  const columns: Column<any>[] = [
+    { key: 'codigo', header: 'Codigo', className: 'w-20', render: (a) => <span className="font-mono text-muted-foreground">{a.codigo}</span> },
+    { key: 'descricao', header: 'Descricao', render: (a) => a.descricao },
+    { key: 'status', header: 'Status', className: 'w-24', render: (a) => <StatusBadge status={a.status} statusMap={ASSET_STATUS_MAP} /> },
+    { key: 'aquisicao', header: 'Aquisicao', className: 'w-24', hideOnMobile: true, render: (a) => dayjs(a.dataAquisicao).format('DD/MM/YYYY') },
+    { key: 'valorAtual', header: 'Valor Atual', className: 'text-right font-mono', render: (a) => formatMoeda(d128(a.valorAtual)) },
+  ];
 
-export function AssetsPage() {
-  const [searchParams] = useSearchParams();
-  const companyId = searchParams.get('companyId') || '';
-  const qc = useQueryClient();
-
-  const { data: assets, isLoading } = useQuery({
-    queryKey: ['assets', companyId],
-    queryFn: () => api.get(`/companies/${companyId}/assets`).then((r) => r.data),
-    enabled: !!companyId,
-  });
-
-  const depreciate = useMutation({
-    mutationFn: () => {
-      const now = new Date();
-      return api.post(`/companies/${companyId}/assets/depreciate/${now.getFullYear()}/${now.getMonth() + 1}`).then((r) => r.data);
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['assets'] }),
-  });
-
-  if (!companyId) {
-    return <div className="text-muted-foreground">Selecione uma empresa (?companyId=...)</div>;
-  }
+  const renderMobileCard = (asset: any) => (
+    <ListItemCard
+      title={
+        <>
+          <span className="font-mono text-muted-foreground">{asset.codigo}</span>
+          <span>{asset.descricao}</span>
+          <StatusBadge status={asset.status} statusMap={ASSET_STATUS_MAP} />
+        </>
+      }
+      subtitle={
+        <>
+          <span>{asset.grupo}</span>
+          <span>Aquisicao: {dayjs(asset.dataAquisicao).format('DD/MM/YYYY')}</span>
+          <span>Metodo: {asset.metodoDepreciacao}</span>
+          <span>Taxa: {(d128(asset.taxaDepreciacao) * 100).toFixed(0)}% a.a.</span>
+        </>
+      }
+      actions={
+        <div className="text-right text-sm">
+          <div>Aquisicao: {formatMoeda(d128(asset.valorAquisicao))}</div>
+          <div className="text-credit">Deprec.: -{formatMoeda(d128(asset.depreciacaoAcumulada))}</div>
+          <div className="font-medium">Atual: {formatMoeda(d128(asset.valorAtual))}</div>
+        </div>
+      }
+    />
+  );
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Patrimonio</h1>
-          <p className="text-muted-foreground">Controle de bens e depreciacao</p>
-        </div>
-        <Button onClick={() => depreciate.mutate()} disabled={depreciate.isPending}>
-          {depreciate.isPending ? 'Depreciando...' : 'Depreciar Mes Atual'}
-        </Button>
-      </div>
+      <PageHeader
+        title="Patrimonio"
+        description="Controle de bens e depreciacao"
+        actions={
+          <Button
+            onClick={() => depreciate.mutate({ year: now.getFullYear(), month: now.getMonth() + 1 })}
+            disabled={depreciate.isPending}
+          >
+            {depreciate.isPending ? 'Depreciando...' : 'Depreciar Mes Atual'}
+          </Button>
+        }
+      />
 
       {isLoading ? (
-        <div className="text-muted-foreground">Carregando...</div>
+        <LoadingState />
       ) : !assets || assets.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Package className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium">Nenhum bem cadastrado</p>
-          </CardContent>
-        </Card>
+        <EmptyState icon={Package} title="Nenhum bem cadastrado" />
       ) : (
-        <div className="grid gap-3">
-          {assets.map((asset: any) => (
-            <Card key={asset._id}>
-              <CardHeader className="py-3">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <CardTitle className="text-sm flex items-center gap-3">
-                      <span className="font-mono text-muted-foreground">{asset.codigo}</span>
-                      <span>{asset.descricao}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_BADGE[asset.status]}`}>
-                        {asset.status}
-                      </span>
-                    </CardTitle>
-                    <div className="text-xs text-muted-foreground flex gap-4">
-                      <span>{asset.grupo}</span>
-                      <span>Aquisicao: {dayjs(asset.dataAquisicao).format('DD/MM/YYYY')}</span>
-                      <span>Metodo: {asset.metodoDepreciacao}</span>
-                      <span>Taxa: {(d128(asset.taxaDepreciacao) * 100).toFixed(0)}% a.a.</span>
-                    </div>
-                  </div>
-                  <div className="text-right text-sm">
-                    <div>Aquisicao: {formatMoeda(d128(asset.valorAquisicao))}</div>
-                    <div className="text-red-600">Deprec.: -{formatMoeda(d128(asset.depreciacaoAcumulada))}</div>
-                    <div className="font-medium">Atual: {formatMoeda(d128(asset.valorAtual))}</div>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
+        <DataTable
+          columns={columns}
+          data={assets}
+          keyExtractor={(a: any) => a._id}
+          mobileCard={renderMobileCard}
+        />
       )}
     </div>
   );
+}
+
+export function AssetsPage() {
+  return <CompanyRequired>{(companyId) => <AssetsContent companyId={companyId} />}</CompanyRequired>;
 }

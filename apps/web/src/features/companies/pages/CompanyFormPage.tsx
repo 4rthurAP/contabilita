@@ -2,12 +2,16 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/molecules/page-header';
+import { FormField } from '@/components/molecules/form-field';
 import { useCreateCompany, useUpdateCompany, useCompany } from '../hooks/useCompanies';
 import { RegimeTributario } from '@contabilita/shared';
-import { useEffect } from 'react';
+import { REGIME_OPTIONS } from '@/lib/constants';
 
 const companySchema = z.object({
   cnpj: z.string().regex(/^\d{14}$/, 'CNPJ deve conter 14 digitos'),
@@ -31,14 +35,6 @@ const companySchema = z.object({
 });
 
 type CompanyForm = z.infer<typeof companySchema>;
-
-const REGIME_OPTIONS = [
-  { value: RegimeTributario.SimplesNacional, label: 'Simples Nacional' },
-  { value: RegimeTributario.LucroPresumido, label: 'Lucro Presumido' },
-  { value: RegimeTributario.LucroReal, label: 'Lucro Real' },
-  { value: RegimeTributario.Imune, label: 'Imune' },
-  { value: RegimeTributario.Isenta, label: 'Isenta' },
-];
 
 export function CompanyFormPage() {
   const { id } = useParams();
@@ -78,11 +74,11 @@ export function CompanyFormPage() {
     if (isEditing) {
       const { cnpj: _, ...updateData } = data;
       updateCompany.mutate(
-        { id: id!, data: updateData },
+        { id: id!, data: updateData as any },
         { onSuccess: () => navigate('/companies') },
       );
     } else {
-      createCompany.mutate(data, { onSuccess: () => navigate('/companies') });
+      createCompany.mutate(data as any, { onSuccess: () => navigate('/companies') });
     }
   };
 
@@ -91,14 +87,10 @@ export function CompanyFormPage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          {isEditing ? 'Editar Empresa' : 'Nova Empresa'}
-        </h1>
-        <p className="text-muted-foreground">
-          {isEditing ? 'Atualize os dados da empresa' : 'Cadastre uma nova empresa no escritorio'}
-        </p>
-      </div>
+      <PageHeader
+        title={isEditing ? 'Editar Empresa' : 'Nova Empresa'}
+        description={isEditing ? 'Atualize os dados da empresa' : 'Cadastre uma nova empresa no escritorio'}
+      />
 
       <Card>
         <CardHeader>
@@ -106,99 +98,69 @@ export function CompanyFormPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">CNPJ</label>
-                <Input
-                  placeholder="12345678000199"
-                  maxLength={14}
-                  disabled={isEditing}
-                  {...register('cnpj')}
-                />
-                {errors.cnpj && (
-                  <p className="text-sm text-destructive">{errors.cnpj.message}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Regime Tributario</label>
-                <select
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  {...register('regimeTributario')}
-                >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField label="CNPJ" error={errors.cnpj?.message}>
+                <Input placeholder="12345678000199" maxLength={14} disabled={isEditing} {...register('cnpj')} />
+              </FormField>
+              <FormField label="Regime Tributario">
+                <Select {...register('regimeTributario')}>
                   {REGIME_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
-                </select>
-              </div>
+                </Select>
+              </FormField>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Razao Social</label>
+            <FormField label="Razao Social" error={errors.razaoSocial?.message}>
               <Input placeholder="Empresa Exemplo Ltda" {...register('razaoSocial')} />
-              {errors.razaoSocial && (
-                <p className="text-sm text-destructive">{errors.razaoSocial.message}</p>
-              )}
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Nome Fantasia</label>
+            <FormField label="Nome Fantasia">
               <Input placeholder="Exemplo" {...register('nomeFantasia')} />
-            </div>
+            </FormField>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Inscricao Estadual</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField label="Inscricao Estadual">
                 <Input {...register('inscricaoEstadual')} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Inscricao Municipal</label>
+              </FormField>
+              <FormField label="Inscricao Municipal">
                 <Input {...register('inscricaoMunicipal')} />
-              </div>
+              </FormField>
             </div>
 
             <h3 className="text-sm font-semibold pt-4 border-t">Endereco</h3>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">CEP</label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <FormField label="CEP">
                 <Input placeholder="01001000" maxLength={8} {...register('endereco.cep')} />
-              </div>
-              <div className="col-span-2 space-y-2">
-                <label className="text-sm font-medium">Logradouro</label>
+              </FormField>
+              <FormField label="Logradouro" className="sm:col-span-2">
                 <Input {...register('endereco.logradouro')} />
-              </div>
+              </FormField>
             </div>
 
-            <div className="grid grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Numero</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <FormField label="Numero">
                 <Input {...register('endereco.numero')} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Complemento</label>
+              </FormField>
+              <FormField label="Complemento">
                 <Input {...register('endereco.complemento')} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Bairro</label>
+              </FormField>
+              <FormField label="Bairro">
                 <Input {...register('endereco.bairro')} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">UF</label>
+              </FormField>
+              <FormField label="UF">
                 <Input maxLength={2} {...register('endereco.uf')} />
-              </div>
+              </FormField>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Cidade</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField label="Cidade">
                 <Input {...register('endereco.cidade')} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Codigo IBGE</label>
+              </FormField>
+              <FormField label="Codigo IBGE">
                 <Input {...register('endereco.codigoIbge')} />
-              </div>
+              </FormField>
             </div>
 
             {error && (
