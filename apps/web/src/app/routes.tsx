@@ -14,6 +14,14 @@ import { TrialBalancePage } from '@/features/accounting/pages/TrialBalancePage';
 import { InvoicesPage } from '@/features/fiscal/pages/InvoicesPage';
 import { TaxAssessmentPage } from '@/features/fiscal/pages/TaxAssessmentPage';
 import { TaxPaymentsPage } from '@/features/fiscal/pages/TaxPaymentsPage';
+import { EmployeesPage } from '@/features/payroll/pages/EmployeesPage';
+import { PayrollRunsPage } from '@/features/payroll/pages/PayrollRunsPage';
+import { AssetsPage } from '@/features/assets/pages/AssetsPage';
+import { BalancoPatrimonialPage } from '@/features/accounting/pages/BalancoPatrimonialPage';
+import { DREPage } from '@/features/accounting/pages/DREPage';
+import { ObligationsPage } from '@/features/obligations/pages/ObligationsPage';
+import { TaxUpdatePage } from '@/features/tax-update/pages/TaxUpdatePage';
+import { AuditPage } from '@/features/audit/pages/AuditPage';
 
 export function AppRoutes() {
   return (
@@ -47,6 +55,27 @@ export function AppRoutes() {
         <Route path="fiscal/invoices" element={<InvoicesPage />} />
         <Route path="fiscal/assessment" element={<TaxAssessmentPage />} />
         <Route path="fiscal/payments" element={<TaxPaymentsPage />} />
+
+        {/* Folha de Pagamento */}
+        <Route path="payroll" element={<PayrollRunsPage />} />
+        <Route path="payroll/employees" element={<EmployeesPage />} />
+        <Route path="payroll/runs" element={<PayrollRunsPage />} />
+
+        {/* Patrimonio */}
+        <Route path="assets" element={<AssetsPage />} />
+
+        {/* Relatorios */}
+        <Route path="accounting/balanco" element={<BalancoPatrimonialPage />} />
+        <Route path="accounting/dre" element={<DREPage />} />
+
+        {/* Obrigacoes Acessorias */}
+        <Route path="obligations" element={<ObligationsPage />} />
+
+        {/* Atualizar Impostos */}
+        <Route path="tax-update" element={<TaxUpdatePage />} />
+
+        {/* Auditoria */}
+        <Route path="audit" element={<AuditPage />} />
       </Route>
     </Routes>
   );

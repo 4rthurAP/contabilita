@@ -35,6 +35,8 @@ const navigation: NavItem[] = [
       { name: 'Lancamentos', href: '/accounting/journal-entries' },
       { name: 'Razao', href: '/accounting/ledger' },
       { name: 'Balancete', href: '/accounting/trial-balance' },
+      { name: 'Balanco Patrimonial', href: '/accounting/balanco' },
+      { name: 'DRE', href: '/accounting/dre' },
     ],
   },
   {
@@ -47,7 +49,15 @@ const navigation: NavItem[] = [
       { name: 'Guias', href: '/fiscal/payments' },
     ],
   },
-  { name: 'Folha de Pagamento', href: '/payroll', icon: Users },
+  {
+    name: 'Folha de Pagamento',
+    href: '/payroll',
+    icon: Users,
+    children: [
+      { name: 'Folhas Mensais', href: '/payroll/runs' },
+      { name: 'Funcionarios', href: '/payroll/employees' },
+    ],
+  },
   { name: 'LALUR', href: '/lalur', icon: Landmark },
   { name: 'Patrimonio', href: '/assets', icon: Package },
   { name: 'Atualizar', href: '/tax-update', icon: Clock },

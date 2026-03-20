@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { FileText, Upload, Check, X } from 'lucide-react';
+import { FileText, Upload, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useInvoices, usePostInvoice, useImportXml } from '../hooks/useFiscal';
