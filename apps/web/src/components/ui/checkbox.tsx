@@ -11,28 +11,28 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     const inputId = id || React.useId();
     return (
       <div className="flex items-center gap-2">
-        <div className="relative flex items-center">
+        <label
+          htmlFor={inputId}
+          className={cn(
+            'flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded border border-input shadow-sm transition-colors',
+            'has-[:focus-visible]:ring-1 has-[:focus-visible]:ring-ring',
+            'has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-primary-foreground',
+            'has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50',
+            '[&>svg]:opacity-0 has-[:checked]:[&>svg]:opacity-100',
+            className,
+          )}
+        >
           <input
             type="checkbox"
             ref={ref}
             id={inputId}
-            className="peer sr-only"
+            className="sr-only"
             {...props}
           />
-          <div
-            className={cn(
-              'flex h-4 w-4 shrink-0 items-center justify-center rounded border border-input shadow-sm transition-colors',
-              'peer-focus-visible:ring-1 peer-focus-visible:ring-ring',
-              'peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground',
-              'peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
-              className,
-            )}
-          >
-            <Check className="h-3 w-3 opacity-0 peer-checked:opacity-100" />
-          </div>
-        </div>
+          <Check className="h-3 w-3 transition-opacity" />
+        </label>
         {label && (
-          <label htmlFor={inputId} className="text-sm leading-none cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          <label htmlFor={inputId} className="text-sm leading-none cursor-pointer">
             {label}
           </label>
         )}

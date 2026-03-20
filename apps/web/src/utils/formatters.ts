@@ -10,9 +10,19 @@ export function formatCnpj(cnpj: string): string {
   return digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
 }
 
+/** Converte string em formato brasileiro (1.234,56) para number */
+export function parseBrazilianNumber(value: string): number {
+  // Se contiver virgula, tratar como separador decimal brasileiro
+  if (value.includes(',')) {
+    return parseFloat(value.replace(/\./g, '').replace(',', '.'));
+  }
+  return parseFloat(value);
+}
+
 /** Formata valor monetario em BRL */
 export function formatMoeda(value: number | string): string {
-  const num = typeof value === 'string' ? parseFloat(value) : value;
+  const num = typeof value === 'string' ? parseBrazilianNumber(value) : value;
+  if (isNaN(num)) return 'R$ 0,00';
   return num.toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',

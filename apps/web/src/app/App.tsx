@@ -19,8 +19,8 @@ export function App() {
       <TooltipProvider>
         <BrowserRouter>
           <AppRoutes />
+          <Toaster />
         </BrowserRouter>
-        <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
   );

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -44,6 +44,22 @@ export function DataTable<T>({
     onSort?.(key, newDir);
   };
 
+  // Client-side sort when no external onSort handler is provided
+  const sortedData = useMemo(() => {
+    if (!sortKey || onSort) return data;
+    return [...data].sort((a, b) => {
+      const aVal = (a as Record<string, unknown>)[sortKey];
+      const bVal = (b as Record<string, unknown>)[sortKey];
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      const cmp = typeof aVal === 'number' && typeof bVal === 'number'
+        ? aVal - bVal
+        : String(aVal).localeCompare(String(bVal), 'pt-BR', { numeric: true });
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [data, sortKey, sortDir, onSort]);
+
   if (data.length === 0 && emptyState) {
     return <>{emptyState}</>;
   }
@@ -53,7 +69,7 @@ export function DataTable<T>({
       {/* Mobile: card-based list */}
       {mobileCard && (
         <div className="flex flex-col gap-3 md:hidden">
-          {data.map((item) => (
+          {sortedData.map((item) => (
             <div
               key={keyExtractor(item)}
               onClick={() => onRowClick?.(item)}
@@ -80,6 +96,7 @@ export function DataTable<T>({
                     col.className,
                   )}
                   onClick={col.sortable ? () => handleSort(col.key) : undefined}
+                  aria-sort={col.sortable && sortKey === col.key ? (sortDir === 'asc' ? 'ascending' : 'descending') : undefined}
                 >
                   <span className="inline-flex items-center gap-1">
                     {col.header}
@@ -96,7 +113,7 @@ export function DataTable<T>({
             </tr>
           </thead>
           <tbody>
-            {data.map((item) => (
+            {sortedData.map((item) => (
               <tr
                 key={keyExtractor(item)}
                 onClick={() => onRowClick?.(item)}

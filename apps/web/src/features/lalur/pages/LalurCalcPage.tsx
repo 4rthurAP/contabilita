@@ -117,7 +117,7 @@ function ResultItem({
   return (
     <div className="space-y-1">
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className={`text-lg font-mono ${className}`}>{formatMoeda(parseFloat(value))}</div>
+      <div className={`text-lg font-mono ${className}`}>{formatMoeda(value)}</div>
     </div>
   );
 }

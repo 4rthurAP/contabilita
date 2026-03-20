@@ -132,6 +132,11 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes fade-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(4px); }
+}
+
 @keyframes scale-in {
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
@@ -149,6 +154,10 @@
 
 @utility animate-fade-in {
   animation: fade-in var(--transition-slow) var(--ease-out);
+}
+
+@utility animate-fade-out {
+  animation: fade-out var(--transition-slow) var(--ease-out);
 }
 
 @utility animate-scale-in {
