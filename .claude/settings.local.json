@@ -34,7 +34,17 @@
       "Bash(npx jest:*)",
       "Bash(git reset:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(curl -s https://registry.npmjs.org/react-bits)",
+      "Bash(curl -s https://registry.npmjs.org/reactbits)",
+      "Bash(curl -s https://registry.npmjs.org/@reactbits/core)",
+      "WebFetch(domain:reactbits.dev)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:dev.to)",
+      "Bash(curl -s https://api.github.com/repos/DavidHDev/react-bits/git/trees/main?recursive=1)",
+      "Bash(python3 -c \":*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(docker.exe compose:*)"
     ]
   }
 }
