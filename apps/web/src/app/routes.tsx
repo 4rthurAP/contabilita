@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
+import { LandingPage } from '@/features/landing/pages/LandingPage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
@@ -42,6 +43,7 @@ import { ProtocoloPage } from '@/features/protocolo/pages/ProtocoloPage';
 export function AppRoutes() {
   return (
     <Routes>
+      <Route path="/landing" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route
