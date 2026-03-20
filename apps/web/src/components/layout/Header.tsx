@@ -20,12 +20,12 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
-      {/* Desktop: toggle sidebar collapse. Mobile: open drawer */}
       <Button
         variant="ghost"
         size="icon"
         className="hidden md:inline-flex"
         onClick={toggleSidebar}
+        aria-label="Alternar barra lateral"
       >
         <Menu className="h-5 w-5" />
       </Button>
@@ -34,6 +34,7 @@ export function Header() {
         size="icon"
         className="md:hidden"
         onClick={() => setMobileSidebarOpen(true)}
+        aria-label="Abrir menu"
       >
         <Menu className="h-5 w-5" />
       </Button>
@@ -52,7 +53,7 @@ export function Header() {
             </Avatar>
             <span className="text-sm text-muted-foreground">{user.name}</span>
           </div>
-          <Button variant="ghost" size="icon" onClick={handleLogout}>
+          <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Sair">
             <LogOut className="h-5 w-5" />
           </Button>
         </div>

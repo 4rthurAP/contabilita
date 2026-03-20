@@ -2,6 +2,7 @@ import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo
 import {
   motion,
   AnimatePresence,
+  useReducedMotion,
   Transition,
   type VariantLabels,
   type Target,
@@ -68,6 +69,8 @@ const RotatingText = forwardRef<RotatingTextRef, RotatingTextProps>(
     ref,
   ) => {
     const [currentTextIndex, setCurrentTextIndex] = useState<number>(0);
+    const [focusPaused, setFocusPaused] = useState(false);
+    const prefersReduced = useReducedMotion();
 
     const splitIntoCharacters = (text: string): string[] => {
       if (typeof Intl !== 'undefined' && Intl.Segmenter) {
@@ -157,13 +160,21 @@ const RotatingText = forwardRef<RotatingTextRef, RotatingTextProps>(
     useImperativeHandle(ref, () => ({ next, previous, jumpTo, reset }), [next, previous, jumpTo, reset]);
 
     useEffect(() => {
-      if (!auto) return;
+      if (!auto || prefersReduced || focusPaused) return;
       const intervalId = setInterval(next, rotationInterval);
       return () => clearInterval(intervalId);
-    }, [next, rotationInterval, auto]);
+    }, [next, rotationInterval, auto, prefersReduced, focusPaused]);
 
     return (
-      <motion.span className={cn('flex flex-wrap whitespace-pre-wrap relative', mainClassName)} {...rest} layout transition={transition}>
+      <motion.span
+        className={cn('flex flex-wrap whitespace-pre-wrap relative', mainClassName)}
+        {...rest}
+        layout
+        transition={transition}
+        onFocus={() => setFocusPaused(true)}
+        onBlur={() => setFocusPaused(false)}
+        tabIndex={0}
+      >
         <span className="sr-only">{texts[currentTextIndex]}</span>
         <AnimatePresence mode={animatePresenceMode} initial={animatePresenceInitial}>
           <motion.span

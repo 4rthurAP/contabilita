@@ -22,7 +22,8 @@ import RotatingText from '@/components/reactbits/RotatingText';
 function NoiseOverlay() {
   return (
     <div
-      className="pointer-events-none fixed inset-0 z-50 opacity-[0.03]"
+      className="pointer-events-none fixed inset-0 z-10 opacity-[0.03]"
+      aria-hidden="true"
       style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
       }}
@@ -34,9 +35,9 @@ function NoiseOverlay() {
 function GlowOrbs() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-blue-600/10 blur-[120px] animate-pulse" />
-      <div className="absolute top-1/3 -right-32 w-[500px] h-[500px] rounded-full bg-violet-600/8 blur-[100px] animate-pulse [animation-delay:2s]" />
-      <div className="absolute -bottom-40 left-1/3 w-[700px] h-[700px] rounded-full bg-indigo-600/6 blur-[140px] animate-pulse [animation-delay:4s]" />
+      <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-blue-600/10 blur-[120px] motion-safe:animate-pulse" />
+      <div className="absolute top-1/3 -right-32 w-[500px] h-[500px] rounded-full bg-violet-600/8 blur-[100px] motion-safe:animate-pulse [animation-delay:2s]" />
+      <div className="absolute -bottom-40 left-1/3 w-[700px] h-[700px] rounded-full bg-indigo-600/6 blur-[140px] motion-safe:animate-pulse [animation-delay:4s]" />
     </div>
   );
 }
@@ -107,6 +108,7 @@ function HeroSection() {
 
         <BlurText
           text="Contabilidade inteligente que transforma seu escritorio"
+          as="h1"
           delay={80}
           animateBy="words"
           direction="bottom"
@@ -534,10 +536,10 @@ function Footer() {
             <span className="text-sm font-semibold text-zinc-400">Contabilita</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-zinc-600">
-            <span>Termos de Uso</span>
-            <span>Politica de Privacidade</span>
-            <span>LGPD</span>
-            <span>Status</span>
+            <a href="#" className="hover:text-zinc-400 transition-colors">Termos de Uso</a>
+            <a href="#" className="hover:text-zinc-400 transition-colors">Politica de Privacidade</a>
+            <a href="#" className="hover:text-zinc-400 transition-colors">LGPD</a>
+            <a href="#" className="hover:text-zinc-400 transition-colors">Status</a>
           </div>
           <p className="text-xs text-zinc-700">
             &copy; {new Date().getFullYear()} Contabilita. Todos os direitos reservados.

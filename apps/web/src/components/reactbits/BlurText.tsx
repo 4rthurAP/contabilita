@@ -1,10 +1,11 @@
-import { motion, Transition, Easing } from 'motion/react';
+import { motion, Transition, Easing, useReducedMotion } from 'motion/react';
 import { useEffect, useRef, useState, useMemo } from 'react';
 
 type BlurTextProps = {
   text?: string;
   delay?: number;
   className?: string;
+  as?: 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'span' | 'div';
   animateBy?: 'words' | 'letters';
   direction?: 'top' | 'bottom';
   threshold?: number;
@@ -32,6 +33,7 @@ const BlurText: React.FC<BlurTextProps> = ({
   text = '',
   delay = 200,
   className = '',
+  as: Tag = 'p',
   animateBy = 'words',
   direction = 'top',
   threshold = 0.1,
@@ -45,6 +47,7 @@ const BlurText: React.FC<BlurTextProps> = ({
   const elements = animateBy === 'words' ? text.split(' ') : text.split('');
   const [inView, setInView] = useState(false);
   const ref = useRef<HTMLParagraphElement>(null);
+  const prefersReduced = useReducedMotion();
 
   useEffect(() => {
     if (!ref.current) return;
@@ -77,6 +80,11 @@ const BlurText: React.FC<BlurTextProps> = ({
     [direction],
   );
 
+  // Skip animation for users who prefer reduced motion
+  if (prefersReduced) {
+    return <Tag className={`blur-text ${className} flex flex-wrap`}>{text}</Tag>;
+  }
+
   const fromSnapshot = animationFrom ?? defaultFrom;
   const toSnapshots = animationTo ?? defaultTo;
 
@@ -87,7 +95,7 @@ const BlurText: React.FC<BlurTextProps> = ({
   );
 
   return (
-    <p ref={ref} className={`blur-text ${className} flex flex-wrap`}>
+    <Tag ref={ref} className={`blur-text ${className} flex flex-wrap`}>
       {elements.map((segment, index) => {
         const animateKeyframes = buildKeyframes(fromSnapshot, toSnapshots);
         const spanTransition: Transition = {
@@ -111,7 +119,7 @@ const BlurText: React.FC<BlurTextProps> = ({
           </motion.span>
         );
       })}
-    </p>
+    </Tag>
   );
 };
 

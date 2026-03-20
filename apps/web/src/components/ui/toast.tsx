@@ -17,6 +17,13 @@ const variantIcons: Record<ToastVariant, typeof Info> = {
   warning: AlertTriangle,
 };
 
+const variantRole: Record<ToastVariant, 'status' | 'alert'> = {
+  default: 'status',
+  success: 'status',
+  destructive: 'alert',
+  warning: 'alert',
+};
+
 export function Toaster() {
   const toasts = useToastStore((s) => s.toasts);
   const removeToast = useToastStore((s) => s.removeToast);
@@ -24,19 +31,24 @@ export function Toaster() {
   if (toasts.length === 0) return null;
 
   return createPortal(
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 w-full max-w-sm">
+    <div
+      aria-live="polite"
+      aria-atomic="false"
+      className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 w-full max-w-sm"
+    >
       {toasts.map((toast) => {
         const variant = toast.variant || 'default';
         const Icon = variantIcons[variant];
         return (
           <div
             key={toast.id}
+            role={variantRole[variant]}
             className={cn(
               'flex items-start gap-3 rounded-lg border p-4 shadow-lg animate-slide-in-bottom',
               variantStyles[variant],
             )}
           >
-            <Icon className="h-5 w-5 shrink-0 mt-0.5" />
+            <Icon className="h-5 w-5 shrink-0 mt-0.5" aria-hidden="true" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium">{toast.title}</div>
               {toast.description && (
@@ -45,6 +57,7 @@ export function Toaster() {
             </div>
             <button
               onClick={() => removeToast(toast.id)}
+              aria-label="Fechar notificacao"
               className="shrink-0 rounded-md p-0.5 opacity-60 hover:opacity-100 transition-opacity"
             >
               <X className="h-4 w-4" />

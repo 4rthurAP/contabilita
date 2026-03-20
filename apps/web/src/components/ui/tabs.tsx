@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 interface TabsContextValue {
   value: string;
   onValueChange: (value: string) => void;
+  id: string;
 }
 
 const TabsContext = React.createContext<TabsContextValue | null>(null);
@@ -20,8 +21,9 @@ interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 function Tabs({ value, onValueChange, className, ...props }: TabsProps) {
+  const id = React.useId();
   return (
-    <TabsContext.Provider value={{ value, onValueChange }}>
+    <TabsContext.Provider value={{ value, onValueChange, id }}>
       <div className={cn('', className)} {...props} />
     </TabsContext.Provider>
   );
@@ -48,15 +50,18 @@ interface TabsTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
 
 const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
   ({ className, value, ...props }, ref) => {
-    const { value: selectedValue, onValueChange } = useTabs();
+    const { value: selectedValue, onValueChange, id } = useTabs();
     const isSelected = selectedValue === value;
     return (
       <button
         ref={ref}
         role="tab"
         type="button"
+        id={`${id}-trigger-${value}`}
         aria-selected={isSelected}
+        aria-controls={`${id}-panel-${value}`}
         data-state={isSelected ? 'active' : 'inactive'}
+        tabIndex={isSelected ? 0 : -1}
         onClick={() => onValueChange(value)}
         className={cn(
           'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
@@ -76,14 +81,20 @@ interface TabsContentProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const TabsContent = React.forwardRef<HTMLDivElement, TabsContentProps>(
   ({ className, value, ...props }, ref) => {
-    const { value: selectedValue } = useTabs();
-    if (selectedValue !== value) return null;
+    const { value: selectedValue, id } = useTabs();
+    const isSelected = selectedValue === value;
     return (
       <div
         ref={ref}
         role="tabpanel"
+        id={`${id}-panel-${value}`}
+        aria-labelledby={`${id}-trigger-${value}`}
+        hidden={!isSelected}
         tabIndex={0}
-        className={cn('mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2', className)}
+        className={cn(
+          'mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+          className,
+        )}
         {...props}
       />
     );

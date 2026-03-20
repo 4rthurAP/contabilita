@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef, ReactNode } from 'react';
-import { motion, useMotionValue, useAnimationFrame, useTransform } from 'motion/react';
+import { motion, useMotionValue, useAnimationFrame, useTransform, useReducedMotion } from 'motion/react';
 
 interface GradientTextProps {
   children: ReactNode;
@@ -23,6 +23,7 @@ export default function GradientText({
   yoyo = true,
 }: GradientTextProps) {
   const [isPaused, setIsPaused] = useState(false);
+  const prefersReduced = useReducedMotion();
   const progress = useMotionValue(0);
   const elapsedRef = useRef(0);
   const lastTimeRef = useRef<number | null>(null);
@@ -30,7 +31,7 @@ export default function GradientText({
   const animationDuration = animationSpeed * 1000;
 
   useAnimationFrame((time) => {
-    if (isPaused) {
+    if (isPaused || prefersReduced) {
       lastTimeRef.current = null;
       return;
     }
