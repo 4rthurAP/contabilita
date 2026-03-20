@@ -1,6 +1,12 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { TenantUser, TenantUserDocument } from '../schemas/tenant-user.schema';
 import { tenantContext, TenantContextData } from '../tenant.context';
 
@@ -21,6 +27,10 @@ export class TenantGuard implements CanActivate {
 
     if (!tenantId) {
       throw new ForbiddenException('Header X-Tenant-Id obrigatorio');
+    }
+
+    if (!Types.ObjectId.isValid(tenantId)) {
+      throw new BadRequestException('X-Tenant-Id invalido');
     }
 
     if (!user) {

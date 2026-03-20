@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -14,6 +15,9 @@ async function bootstrap() {
 
   // Security headers
   app.use(helmet());
+
+  // Prevent MongoDB operator injection
+  app.use(mongoSanitize());
 
   // CORS
   app.enableCors({

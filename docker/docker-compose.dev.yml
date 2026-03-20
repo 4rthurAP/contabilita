@@ -1,4 +1,20 @@
 services:
+  mongo1:
+    ports:
+      - "27017:27017"
+
+  mongo2:
+    ports:
+      - "27018:27018"
+
+  mongo3:
+    ports:
+      - "27019:27019"
+
+  redis:
+    ports:
+      - "6379:6379"
+
   api:
     build:
       context: ..

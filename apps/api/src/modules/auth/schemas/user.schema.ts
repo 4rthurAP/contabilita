@@ -25,8 +25,14 @@ export class User {
   @Prop({ default: false })
   isSuperAdmin: boolean;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   refreshToken: string | null;
+
+  @Prop({ type: Number, default: 0 })
+  failedLoginAttempts: number;
+
+  @Prop({ type: Date, default: null })
+  lockedUntil: Date | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

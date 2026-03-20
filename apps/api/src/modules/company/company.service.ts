@@ -10,6 +10,7 @@ import { Company, CompanyDocument } from './schemas/company.schema';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { requireCurrentTenant } from '../tenant/tenant.context';
+import { escapeRegex } from '../../common/utils/escape-regex.util';
 
 @Injectable()
 export class CompanyService {
@@ -45,10 +46,11 @@ export class CompanyService {
     const filter: any = { tenantId: ctx.tenantId };
 
     if (search) {
+      const escaped = escapeRegex(search);
       filter.$or = [
-        { razaoSocial: { $regex: search, $options: 'i' } },
-        { nomeFantasia: { $regex: search, $options: 'i' } },
-        { cnpj: { $regex: search } },
+        { razaoSocial: { $regex: escaped, $options: 'i' } },
+        { nomeFantasia: { $regex: escaped, $options: 'i' } },
+        { cnpj: { $regex: escaped } },
       ];
     }
 

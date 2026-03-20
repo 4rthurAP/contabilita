@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { TipoConta, NaturezaConta } from '@contabilita/shared';
 
@@ -6,11 +6,13 @@ export class CreateAccountDto {
   @ApiProperty({ example: '1.1.01.001' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(50)
   codigo: string;
 
   @ApiProperty({ example: 'Caixa Geral' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   nome: string;
 
   @ApiProperty({ enum: TipoConta })
@@ -28,6 +30,7 @@ export class CreateAccountDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  @MaxLength(50)
   parentId?: string;
 
   @ApiProperty({ default: false })
@@ -37,5 +40,6 @@ export class CreateAccountDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  @MaxLength(50)
   codigoReferencialRfb?: string;
 }

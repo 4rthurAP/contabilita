@@ -14,5 +14,8 @@ COPY apps/api apps/api
 RUN pnpm --filter @contabilita/shared build
 RUN pnpm --filter @contabilita/api build
 
+RUN addgroup -S app && adduser -S app -G app
+USER app
+
 EXPOSE 3000
 CMD ["node", "apps/api/dist/main.js"]

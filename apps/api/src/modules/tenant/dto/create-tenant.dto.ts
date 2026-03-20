@@ -1,14 +1,16 @@
-import { IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsNotEmpty, IsString, Matches, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateTenantDto {
   @ApiProperty({ example: 'Contabilidade Silva & Associados' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   name: string;
 
   @ApiProperty({ example: 'silva-associados' })
   @IsString()
+  @MaxLength(50)
   @Matches(/^[a-z0-9-]+$/, { message: 'Slug deve conter apenas letras minusculas, numeros e hifens' })
   slug: string;
 
