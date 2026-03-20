@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField } from '@/components/molecules/form-field';
-import { useRegister } from '../hooks/useAuth';
+import { Separator } from '@/components/ui/separator';
+import { GoogleLogin } from '@react-oauth/google';
+import { useRegister, useGoogleAuth } from '../hooks/useAuth';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
@@ -19,6 +21,7 @@ type RegisterForm = z.infer<typeof registerSchema>;
 
 export function RegisterPage() {
   const { mutate, isPending, error } = useRegister();
+  const googleAuth = useGoogleAuth();
   const {
     register,
     handleSubmit,
@@ -63,6 +66,31 @@ export function RegisterPage() {
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? 'Registrando...' : 'Criar conta'}
             </Button>
+
+            <div className="flex items-center gap-3">
+              <Separator className="flex-1" />
+              <span className="text-xs text-muted-foreground">ou</span>
+              <Separator className="flex-1" />
+            </div>
+
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={(response) => {
+                  if (response.credential) {
+                    googleAuth.mutate(response.credential);
+                  }
+                }}
+                onError={() => {}}
+                text="signup_with"
+                width="384"
+              />
+            </div>
+
+            {googleAuth.error && (
+              <p className="text-sm text-destructive">
+                {(googleAuth.error as any).response?.data?.message || 'Erro ao autenticar com Google'}
+              </p>
+            )}
 
             <p className="text-center text-sm text-muted-foreground">
               Ja tem conta?{' '}

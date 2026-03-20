@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField } from '@/components/molecules/form-field';
-import { useLogin } from '../hooks/useAuth';
+import { Separator } from '@/components/ui/separator';
+import { GoogleLogin } from '@react-oauth/google';
+import { useLogin, useGoogleAuth } from '../hooks/useAuth';
 
 const loginSchema = z.object({
   email: z.string().email('Email invalido'),
@@ -17,6 +19,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export function LoginPage() {
   const { mutate, isPending, error } = useLogin();
+  const googleAuth = useGoogleAuth();
   const {
     register,
     handleSubmit,
@@ -53,6 +56,31 @@ export function LoginPage() {
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? 'Entrando...' : 'Entrar'}
             </Button>
+
+            <div className="flex items-center gap-3">
+              <Separator className="flex-1" />
+              <span className="text-xs text-muted-foreground">ou</span>
+              <Separator className="flex-1" />
+            </div>
+
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={(response) => {
+                  if (response.credential) {
+                    googleAuth.mutate(response.credential);
+                  }
+                }}
+                onError={() => {}}
+                text="continue_with"
+                width="384"
+              />
+            </div>
+
+            {googleAuth.error && (
+              <p className="text-sm text-destructive">
+                {(googleAuth.error as any).response?.data?.message || 'Erro ao autenticar com Google'}
+              </p>
+            )}
 
             <p className="text-center text-sm text-muted-foreground">
               Nao tem conta?{' '}

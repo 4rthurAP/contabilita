@@ -17,8 +17,10 @@ export interface AuthResponse {
     id: string;
     name: string;
     email: string;
-    cpf: string;
+    cpf: string | null;
     isSuperAdmin: boolean;
+    authProvider?: 'local' | 'google';
+    avatarUrl?: string | null;
   };
   accessToken: string;
   refreshToken: string;
@@ -33,6 +35,9 @@ export const authService = {
 
   refresh: (refreshToken: string) =>
     api.post<{ accessToken: string; refreshToken: string }>('/auth/refresh', { refreshToken }).then((r) => r.data),
+
+  googleAuth: (token: string) =>
+    api.post<AuthResponse>('/auth/google', { token }).then((r) => r.data),
 
   logout: () => api.post('/auth/logout'),
 

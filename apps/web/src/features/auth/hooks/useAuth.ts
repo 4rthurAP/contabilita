@@ -19,6 +19,21 @@ export function useLogin() {
   });
 }
 
+export function useGoogleAuth() {
+  const navigate = useNavigate();
+  const setUser = useAuthStore((s) => s.setUser);
+
+  return useMutation({
+    mutationFn: (token: string) => authService.googleAuth(token),
+    onSuccess: (data) => {
+      localStorage.setItem('access_token', data.accessToken);
+      localStorage.setItem('refresh_token', data.refreshToken);
+      setUser(data.user);
+      navigate('/app');
+    },
+  });
+}
+
 export function useRegister() {
   const navigate = useNavigate();
   const setUser = useAuthStore((s) => s.setUser);

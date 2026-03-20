@@ -17,6 +17,9 @@
     "clean": "rm -rf dist",
     "lint": "eslint src/"
   },
+  "dependencies": {
+    "@casl/ability": "^6.7.0"
+  },
   "devDependencies": {
     "typescript": "^5.7.0"
   }

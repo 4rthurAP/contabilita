@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
+import { OAuth2Client } from 'google-auth-library';
 import { User, UserDocument } from './schemas/user.schema';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -20,12 +21,17 @@ const LOCK_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 @Injectable()
 export class AuthService {
+  private googleClient: OAuth2Client;
+
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private jwtService: JwtService,
     private configService: ConfigService,
     private tokenBlacklistService: TokenBlacklistService,
-  ) {}
+  ) {
+    const googleClientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
+    this.googleClient = new OAuth2Client(googleClientId);
+  }
 
   async register(dto: RegisterDto) {
     const existing = await this.userModel.findOne({
@@ -66,6 +72,11 @@ export class AuthService {
       throw new UnauthorizedException(
         'Conta bloqueada por excesso de tentativas. Tente novamente em 15 minutos.',
       );
+    }
+
+    // Google-only users cannot login with email/password
+    if (!user.password) {
+      throw new UnauthorizedException('Use login com Google');
     }
 
     const passwordValid = await bcrypt.compare(dto.password, user.password);
@@ -145,6 +156,60 @@ export class AuthService {
     }
   }
 
+  async googleAuth(idToken: string) {
+    const googleClientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
+    let payload;
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken,
+        audience: googleClientId,
+      });
+      payload = ticket.getPayload();
+    } catch {
+      throw new UnauthorizedException('Token Google invalido');
+    }
+
+    if (!payload || !payload.email) {
+      throw new UnauthorizedException('Token Google invalido');
+    }
+
+    const { sub: googleId, email, name, picture } = payload;
+
+    // Try to find by googleId first, then by email
+    let user = await this.userModel.findOne({ googleId });
+    if (!user) {
+      user = await this.userModel.findOne({ email: email.toLowerCase() });
+      if (user) {
+        // Link existing account with Google
+        user.googleId = googleId!;
+        user.authProvider = 'google';
+        if (picture && !user.avatarUrl) {
+          user.avatarUrl = picture;
+        }
+        await user.save();
+      } else {
+        // Create new Google user
+        user = await this.userModel.create({
+          name: name || email.split('@')[0],
+          email: email.toLowerCase(),
+          password: null,
+          cpf: null,
+          googleId,
+          authProvider: 'google',
+          avatarUrl: picture || null,
+        });
+      }
+    }
+
+    const tokens = await this.generateTokens(user);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+    return {
+      user: this.sanitizeUser(user),
+      ...tokens,
+    };
+  }
+
   async getProfile(userId: string) {
     const user = await this.userModel.findById(userId).select('-password -refreshToken');
     if (!user) {
@@ -184,6 +249,8 @@ export class AuthService {
       email: user.email,
       cpf: user.cpf,
       isSuperAdmin: user.isSuperAdmin,
+      authProvider: user.authProvider,
+      avatarUrl: user.avatarUrl,
     };
   }
 

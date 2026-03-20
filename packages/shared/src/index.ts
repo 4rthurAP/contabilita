@@ -15,6 +15,10 @@ export * from './types/address.types.js';
 export * from './types/api.types.js';
 export * from './types/accounting.types.js';
 export * from './types/fiscal.types.js';
+export * from './types/permissions.types.js';
+
+// ── Permissions ─────────────────────────────
+export * from './permissions/define-ability.js';
 
 // ── Constants ────────────────────────────────
 export * from './constants/tax-tables.constants.js';

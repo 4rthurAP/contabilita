@@ -4,8 +4,10 @@ interface User {
   id: string;
   email: string;
   name: string;
-  cpf: string;
+  cpf: string | null;
   isSuperAdmin: boolean;
+  authProvider?: 'local' | 'google';
+  avatarUrl?: string | null;
 }
 
 interface AuthState {

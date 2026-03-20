@@ -1,126 +1,28 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { NavLink } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  Building2,
-  BookOpen,
-  FileText,
-  Users,
-  Landmark,
-  Package,
-  Clock,
-  Shield,
-  Globe,
-  Send,
-  Settings,
-  X,
-  ClipboardList,
-  ListTodo,
-  Search,
-  DollarSign,
-  UserCheck,
-  Calculator,
-  Timer,
-  FileBox,
-  ChevronRight,
-} from 'lucide-react';
+import { X, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/ui.store';
-
-interface NavItem {
-  name: string;
-  href: string;
-  icon: typeof LayoutDashboard;
-  children?: { name: string; href: string }[];
-}
-
-const navigation: NavItem[] = [
-  { name: 'Dashboard', href: '/app', icon: LayoutDashboard },
-  { name: 'Empresas', href: '/app/companies', icon: Building2 },
-  {
-    name: 'Contabilidade',
-    href: '/app/accounting',
-    icon: BookOpen,
-    children: [
-      { name: 'Plano de Contas', href: '/app/accounting' },
-      { name: 'Lancamentos', href: '/app/accounting/journal-entries' },
-      { name: 'Razao', href: '/app/accounting/ledger' },
-      { name: 'Balancete', href: '/app/accounting/trial-balance' },
-      { name: 'Balanco Patrimonial', href: '/app/accounting/balanco' },
-      { name: 'DRE', href: '/app/accounting/dre' },
-    ],
-  },
-  {
-    name: 'Escrita Fiscal',
-    href: '/app/fiscal',
-    icon: FileText,
-    children: [
-      { name: 'Notas Fiscais', href: '/app/fiscal/invoices' },
-      { name: 'Apuracao', href: '/app/fiscal/assessment' },
-      { name: 'Guias', href: '/app/fiscal/payments' },
-    ],
-  },
-  {
-    name: 'Folha de Pagamento',
-    href: '/app/payroll',
-    icon: Users,
-    children: [
-      { name: 'Folhas Mensais', href: '/app/payroll/runs' },
-      { name: 'Funcionarios', href: '/app/payroll/employees' },
-    ],
-  },
-  {
-    name: 'LALUR',
-    href: '/app/lalur',
-    icon: Landmark,
-    children: [
-      { name: 'Lancamentos', href: '/app/lalur' },
-      { name: 'Calculo Lucro Real', href: '/app/lalur/calculate' },
-    ],
-  },
-  { name: 'Patrimonio', href: '/app/assets', icon: Package },
-  { name: 'Atualizar', href: '/app/tax-update', icon: Clock },
-  { name: 'Auditoria', href: '/app/audit', icon: Shield },
-  {
-    name: 'Honorarios',
-    href: '/app/honorarios',
-    icon: DollarSign,
-    children: [
-      { name: 'Contratos', href: '/app/honorarios/contratos' },
-      { name: 'Cobrancas', href: '/app/honorarios/cobrancas' },
-      { name: 'Fluxo de Caixa', href: '/app/honorarios/fluxo-caixa' },
-    ],
-  },
-  { name: 'Portal Cliente', href: '/app/portal', icon: Globe },
-  { name: 'Portal Empregado', href: '/app/employee-portal', icon: UserCheck },
-  { name: 'CCT', href: '/app/cct', icon: Calculator },
-  {
-    name: 'Custos',
-    href: '/app/custos',
-    icon: Timer,
-    children: [
-      { name: 'Apontamento', href: '/app/custos/time-tracking' },
-      { name: 'Analise', href: '/app/custos/analysis' },
-    ],
-  },
-  { name: 'Obrigacoes', href: '/app/obligations', icon: Send },
-  { name: 'Protocolo', href: '/app/protocolo', icon: FileBox },
-  { name: 'Registro', href: '/app/registro', icon: ClipboardList },
-  {
-    name: 'Administrar',
-    href: '/app/administrar',
-    icon: ListTodo,
-    children: [
-      { name: 'Tarefas', href: '/app/administrar/tarefas' },
-      { name: 'Produtividade', href: '/app/administrar/produtividade' },
-    ],
-  },
-  { name: 'Busca NF-e', href: '/app/busca-nfe', icon: Search },
-  { name: 'Configuracoes', href: '/app/settings', icon: Settings },
-];
+import { useAppAbility } from '@/lib/ability';
+import { navigation } from '@/lib/navigation.config';
 
 function SidebarContent({ expanded, onNavigate }: { expanded: boolean; onNavigate?: () => void }) {
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
+  const ability = useAppAbility();
+
+  const filteredNavigation = useMemo(() => {
+    return navigation
+      .filter((item) => ability.can('read', item.subject))
+      .map((item) => {
+        if (!item.children) return item;
+        const filteredChildren = item.children.filter(
+          (child) => ability.can('read', child.subject ?? item.subject),
+        );
+        if (filteredChildren.length === 0) return null;
+        return { ...item, children: filteredChildren };
+      })
+      .filter(Boolean) as typeof navigation;
+  }, [ability]);
 
   const toggleSection = (href: string) => {
     setOpenSections((prev) => {
@@ -133,7 +35,7 @@ function SidebarContent({ expanded, onNavigate }: { expanded: boolean; onNavigat
 
   return (
     <nav className="flex-1 overflow-y-auto p-2" role="navigation" aria-label="Menu principal">
-      {navigation.map((item) => {
+      {filteredNavigation.map((item) => {
         const hasChildren = !!item.children;
         const isOpen = openSections.has(item.href);
 

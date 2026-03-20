@@ -14,12 +14,22 @@ export class User {
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email: string;
 
-  @Prop({ required: true })
-  password: string;
+  @Prop({ required: false, default: null })
+  password: string | null;
 
   @ApiProperty()
-  @Prop({ required: true, unique: true })
-  cpf: string;
+  @Prop({ required: false, sparse: true, unique: true })
+  cpf: string | null;
+
+  @ApiProperty()
+  @Prop({ type: String, default: 'local', enum: ['local', 'google'] })
+  authProvider: 'local' | 'google';
+
+  @Prop({ type: String, default: null, sparse: true, unique: true })
+  googleId: string | null;
+
+  @Prop({ type: String, default: null })
+  avatarUrl: string | null;
 
   @ApiProperty()
   @Prop({ default: false })
