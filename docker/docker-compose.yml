@@ -1,0 +1,65 @@
+services:
+  mongo1:
+    image: mongo:7
+    container_name: contabilita-mongo1
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo1_data:/data/db
+      - ./mongo-init/init-replica.js:/docker-entrypoint-initdb.d/init-replica.js:ro
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo1:27017'},{_id:1,host:'mongo2:27018'},{_id:2,host:'mongo3:27019'}]}) }" | mongosh --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      retries: 30
+    networks:
+      - contabilita-net
+
+  mongo2:
+    image: mongo:7
+    container_name: contabilita-mongo2
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27018"]
+    ports:
+      - "27018:27018"
+    volumes:
+      - mongo2_data:/data/db
+    networks:
+      - contabilita-net
+
+  mongo3:
+    image: mongo:7
+    container_name: contabilita-mongo3
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27019"]
+    ports:
+      - "27019:27019"
+    volumes:
+      - mongo3_data:/data/db
+    networks:
+      - contabilita-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: contabilita-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - contabilita-net
+
+volumes:
+  mongo1_data:
+  mongo2_data:
+  mongo3_data:
+  redis_data:
+
+networks:
+  contabilita-net:
+    driver: bridge

@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.dominiosistemas.com.br)",
+      "WebSearch",
+      "WebFetch(domain:www.b2bstack.com.br)",
+      "WebFetch(domain:ospcontabilidade.com.br)",
+      "Bash(npm --version)",
+      "Bash(npx --version)",
+      "Bash(docker --version)",
+      "Bash(docker compose:*)",
+      "Bash(pnpm --version)",
+      "Bash(git init:*)",
+      "Bash(git branch:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm approve-builds:*)",
+      "Bash(chmod +x .husky/commit-msg)",
+      "Bash(pnpm:*)"
+    ]
+  }
+}

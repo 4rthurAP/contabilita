@@ -1,0 +1,38 @@
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    container_name: contabilita-api
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URI=mongodb://mongo1:27017,mongo2:27018,mongo3:27019/contabilita?replicaSet=rs0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - NODE_ENV=development
+    depends_on:
+      mongo1:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../apps/api/src:/app/apps/api/src
+    networks:
+      - contabilita-net
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+    container_name: contabilita-web
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000/api
+    depends_on:
+      - api
+    volumes:
+      - ../apps/web/src:/app/apps/web/src
+    networks:
+      - contabilita-net

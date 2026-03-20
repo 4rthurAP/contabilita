@@ -1,0 +1,90 @@
+import { TipoConta, NaturezaConta } from '@contabilita/shared';
+
+/**
+ * Plano de contas referencial simplificado baseado no layout RFB/SPED.
+ * Este seed cria a estrutura base — o usuario pode adicionar contas analiticas.
+ */
+export const PLANO_CONTAS_RFB = [
+  // ── ATIVO ──────────────────────────────────────
+  { codigo: '1', nome: 'ATIVO', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 1, isAnalytical: false },
+  { codigo: '1.1', nome: 'ATIVO CIRCULANTE', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 2, isAnalytical: false, parentCodigo: '1' },
+  { codigo: '1.1.01', nome: 'CAIXA E EQUIVALENTES DE CAIXA', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 3, isAnalytical: false, parentCodigo: '1.1' },
+  { codigo: '1.1.01.001', nome: 'Caixa Geral', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '1.1.01' },
+  { codigo: '1.1.01.002', nome: 'Bancos Conta Movimento', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '1.1.01' },
+  { codigo: '1.1.01.003', nome: 'Aplicacoes Financeiras', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '1.1.01' },
+  { codigo: '1.1.02', nome: 'CONTAS A RECEBER', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 3, isAnalytical: false, parentCodigo: '1.1' },
+  { codigo: '1.1.02.001', nome: 'Clientes', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '1.1.02' },
+  { codigo: '1.1.02.002', nome: 'Duplicatas a Receber', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '1.1.02' },
+  { codigo: '1.1.03', nome: 'ESTOQUES', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 3, isAnalytical: false, parentCodigo: '1.1' },
+  { codigo: '1.1.03.001', nome: 'Mercadorias para Revenda', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '1.1.03' },
+  { codigo: '1.1.04', nome: 'IMPOSTOS A RECUPERAR', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 3, isAnalytical: false, parentCodigo: '1.1' },
+  { codigo: '1.1.04.001', nome: 'ICMS a Recuperar', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '1.1.04' },
+  { codigo: '1.1.04.002', nome: 'PIS a Recuperar', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '1.1.04' },
+  { codigo: '1.1.04.003', nome: 'COFINS a Recuperar', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '1.1.04' },
+  { codigo: '1.2', nome: 'ATIVO NAO CIRCULANTE', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 2, isAnalytical: false, parentCodigo: '1' },
+  { codigo: '1.2.01', nome: 'IMOBILIZADO', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 3, isAnalytical: false, parentCodigo: '1.2' },
+  { codigo: '1.2.01.001', nome: 'Maquinas e Equipamentos', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '1.2.01' },
+  { codigo: '1.2.01.002', nome: 'Veiculos', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '1.2.01' },
+  { codigo: '1.2.01.003', nome: 'Moveis e Utensilios', tipo: TipoConta.Ativo, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '1.2.01' },
+  { codigo: '1.2.01.099', nome: '(-) Depreciacao Acumulada', tipo: TipoConta.Ativo, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '1.2.01' },
+
+  // ── PASSIVO ────────────────────────────────────
+  { codigo: '2', nome: 'PASSIVO', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 1, isAnalytical: false },
+  { codigo: '2.1', nome: 'PASSIVO CIRCULANTE', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 2, isAnalytical: false, parentCodigo: '2' },
+  { codigo: '2.1.01', nome: 'FORNECEDORES', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 3, isAnalytical: false, parentCodigo: '2.1' },
+  { codigo: '2.1.01.001', nome: 'Fornecedores Nacionais', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '2.1.01' },
+  { codigo: '2.1.02', nome: 'OBRIGACOES TRABALHISTAS', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 3, isAnalytical: false, parentCodigo: '2.1' },
+  { codigo: '2.1.02.001', nome: 'Salarios a Pagar', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '2.1.02' },
+  { codigo: '2.1.02.002', nome: 'FGTS a Recolher', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '2.1.02' },
+  { codigo: '2.1.02.003', nome: 'INSS a Recolher', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '2.1.02' },
+  { codigo: '2.1.03', nome: 'OBRIGACOES FISCAIS', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 3, isAnalytical: false, parentCodigo: '2.1' },
+  { codigo: '2.1.03.001', nome: 'ICMS a Recolher', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '2.1.03' },
+  { codigo: '2.1.03.002', nome: 'PIS a Recolher', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '2.1.03' },
+  { codigo: '2.1.03.003', nome: 'COFINS a Recolher', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '2.1.03' },
+  { codigo: '2.1.03.004', nome: 'IRPJ a Recolher', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '2.1.03' },
+  { codigo: '2.1.03.005', nome: 'CSLL a Recolher', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '2.1.03' },
+  { codigo: '2.1.03.006', nome: 'ISS a Recolher', tipo: TipoConta.Passivo, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '2.1.03' },
+
+  // ── PATRIMONIO LIQUIDO ─────────────────────────
+  { codigo: '2.3', nome: 'PATRIMONIO LIQUIDO', tipo: TipoConta.PatrimonioLiquido, natureza: NaturezaConta.Credora, nivel: 2, isAnalytical: false, parentCodigo: '2' },
+  { codigo: '2.3.01', nome: 'CAPITAL SOCIAL', tipo: TipoConta.PatrimonioLiquido, natureza: NaturezaConta.Credora, nivel: 3, isAnalytical: false, parentCodigo: '2.3' },
+  { codigo: '2.3.01.001', nome: 'Capital Subscrito', tipo: TipoConta.PatrimonioLiquido, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '2.3.01' },
+  { codigo: '2.3.02', nome: 'LUCROS OU PREJUIZOS ACUMULADOS', tipo: TipoConta.PatrimonioLiquido, natureza: NaturezaConta.Credora, nivel: 3, isAnalytical: false, parentCodigo: '2.3' },
+  { codigo: '2.3.02.001', nome: 'Lucros Acumulados', tipo: TipoConta.PatrimonioLiquido, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '2.3.02' },
+
+  // ── RECEITAS ───────────────────────────────────
+  { codigo: '3', nome: 'RECEITAS', tipo: TipoConta.Receita, natureza: NaturezaConta.Credora, nivel: 1, isAnalytical: false },
+  { codigo: '3.1', nome: 'RECEITA OPERACIONAL', tipo: TipoConta.Receita, natureza: NaturezaConta.Credora, nivel: 2, isAnalytical: false, parentCodigo: '3' },
+  { codigo: '3.1.01', nome: 'RECEITA BRUTA', tipo: TipoConta.Receita, natureza: NaturezaConta.Credora, nivel: 3, isAnalytical: false, parentCodigo: '3.1' },
+  { codigo: '3.1.01.001', nome: 'Receita de Vendas de Mercadorias', tipo: TipoConta.Receita, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '3.1.01' },
+  { codigo: '3.1.01.002', nome: 'Receita de Prestacao de Servicos', tipo: TipoConta.Receita, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '3.1.01' },
+  { codigo: '3.1.02', nome: 'DEDUCOES DA RECEITA', tipo: TipoConta.Receita, natureza: NaturezaConta.Devedora, nivel: 3, isAnalytical: false, parentCodigo: '3.1' },
+  { codigo: '3.1.02.001', nome: '(-) ICMS sobre Vendas', tipo: TipoConta.Receita, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '3.1.02' },
+  { codigo: '3.1.02.002', nome: '(-) PIS sobre Vendas', tipo: TipoConta.Receita, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '3.1.02' },
+  { codigo: '3.1.02.003', nome: '(-) COFINS sobre Vendas', tipo: TipoConta.Receita, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '3.1.02' },
+  { codigo: '3.2', nome: 'RECEITA FINANCEIRA', tipo: TipoConta.Receita, natureza: NaturezaConta.Credora, nivel: 2, isAnalytical: false, parentCodigo: '3' },
+  { codigo: '3.2.01.001', nome: 'Juros Recebidos', tipo: TipoConta.Receita, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '3.2' },
+  { codigo: '3.2.01.002', nome: 'Rendimentos de Aplicacoes', tipo: TipoConta.Receita, natureza: NaturezaConta.Credora, nivel: 4, isAnalytical: true, parentCodigo: '3.2' },
+
+  // ── DESPESAS ───────────────────────────────────
+  { codigo: '4', nome: 'DESPESAS', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 1, isAnalytical: false },
+  { codigo: '4.1', nome: 'CUSTOS DAS VENDAS', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 2, isAnalytical: false, parentCodigo: '4' },
+  { codigo: '4.1.01', nome: 'CMV', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 3, isAnalytical: false, parentCodigo: '4.1' },
+  { codigo: '4.1.01.001', nome: 'Custo das Mercadorias Vendidas', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '4.1.01' },
+  { codigo: '4.2', nome: 'DESPESAS OPERACIONAIS', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 2, isAnalytical: false, parentCodigo: '4' },
+  { codigo: '4.2.01', nome: 'DESPESAS COM PESSOAL', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 3, isAnalytical: false, parentCodigo: '4.2' },
+  { codigo: '4.2.01.001', nome: 'Salarios e Ordenados', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '4.2.01' },
+  { codigo: '4.2.01.002', nome: 'Encargos Sociais (INSS Patronal)', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '4.2.01' },
+  { codigo: '4.2.01.003', nome: 'FGTS', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '4.2.01' },
+  { codigo: '4.2.02', nome: 'DESPESAS ADMINISTRATIVAS', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 3, isAnalytical: false, parentCodigo: '4.2' },
+  { codigo: '4.2.02.001', nome: 'Aluguel', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '4.2.02' },
+  { codigo: '4.2.02.002', nome: 'Energia Eletrica', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '4.2.02' },
+  { codigo: '4.2.02.003', nome: 'Telefone e Internet', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '4.2.02' },
+  { codigo: '4.2.02.004', nome: 'Material de Escritorio', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '4.2.02' },
+  { codigo: '4.2.03', nome: 'DESPESAS COM DEPRECIACAO', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 3, isAnalytical: false, parentCodigo: '4.2' },
+  { codigo: '4.2.03.001', nome: 'Depreciacao de Imoveis', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '4.2.03' },
+  { codigo: '4.2.03.002', nome: 'Depreciacao de Maquinas', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '4.2.03' },
+  { codigo: '4.3', nome: 'DESPESAS FINANCEIRAS', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 2, isAnalytical: false, parentCodigo: '4' },
+  { codigo: '4.3.01.001', nome: 'Juros Pagos', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '4.3' },
+  { codigo: '4.3.01.002', nome: 'Tarifas Bancarias', tipo: TipoConta.Despesa, natureza: NaturezaConta.Devedora, nivel: 4, isAnalytical: true, parentCodigo: '4.3' },
+];
