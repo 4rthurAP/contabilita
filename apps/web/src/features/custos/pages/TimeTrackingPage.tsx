@@ -112,6 +112,9 @@ function TimeTrackingContent({ companyId }: { companyId: string }) {
               </Button>
             </div>
           </form>
+          {createEntry.isError && (
+            <p className="text-sm text-destructive mt-2">Erro ao registrar apontamento. Tente novamente.</p>
+          )}
         </CardContent>
       </Card>
 

@@ -27,14 +27,14 @@ export function CustosAnalysisPage() {
 
   const columns: Column<any>[] = [
     { key: 'empresa', header: 'Empresa', render: (a) => <span className="font-medium">{a.empresaNome}</span> },
-    { key: 'horas', header: 'Horas', className: 'text-right font-mono w-20', render: (a) => `${a.horasTrabalhadas.toFixed(1)}h` },
-    { key: 'custoHora', header: 'Custo/Hora', className: 'text-right font-mono w-28', hideOnMobile: true, render: (a) => formatMoeda(a.custoHora) },
-    { key: 'custoTotal', header: 'Custo Total', className: 'text-right font-mono w-28', render: (a) => formatMoeda(a.custoTotal) },
-    { key: 'receita', header: 'Receita', className: 'text-right font-mono w-28', hideOnMobile: true, render: (a) => formatMoeda(a.receita) },
+    { key: 'horas', header: 'Horas', className: 'text-right font-mono w-20', render: (a) => `${(a.horasTrabalhadas ?? 0).toFixed(1)}h` },
+    { key: 'custoHora', header: 'Custo/Hora', className: 'text-right font-mono w-28', hideOnMobile: true, render: (a) => formatMoeda(a.custoHora ?? 0) },
+    { key: 'custoTotal', header: 'Custo Total', className: 'text-right font-mono w-28', render: (a) => formatMoeda(a.custoTotal ?? 0) },
+    { key: 'receita', header: 'Receita', className: 'text-right font-mono w-28', hideOnMobile: true, render: (a) => formatMoeda(a.receita ?? 0) },
     {
       key: 'margem', header: 'Margem', className: 'text-right w-24',
       render: (a) => {
-        const margem = a.margem * 100;
+        const margem = (a.margem ?? 0) * 100;
         return (
           <Badge variant={margem >= 30 ? 'success' : margem >= 0 ? 'warning' : 'danger'}>
             {margem.toFixed(1)}%
@@ -44,30 +44,33 @@ export function CustosAnalysisPage() {
     },
   ];
 
-  const renderMobileCard = (a: any) => (
+  const renderMobileCard = (a: any) => {
+    const margem = (a.margem ?? 0) * 100;
+    return (
     <ListItemCard
       title={
         <>
           <span className="font-medium">{a.empresaNome}</span>
-          <Badge variant={a.margem * 100 >= 30 ? 'success' : a.margem * 100 >= 0 ? 'warning' : 'danger'}>
-            {(a.margem * 100).toFixed(1)}%
+          <Badge variant={margem >= 30 ? 'success' : margem >= 0 ? 'warning' : 'danger'}>
+            {margem.toFixed(1)}%
           </Badge>
         </>
       }
       subtitle={
         <>
-          <span>{a.horasTrabalhadas.toFixed(1)}h trabalhadas</span>
-          <span>Custo/h: {formatMoeda(a.custoHora)}</span>
+          <span>{(a.horasTrabalhadas ?? 0).toFixed(1)}h trabalhadas</span>
+          <span>Custo/h: {formatMoeda(a.custoHora ?? 0)}</span>
         </>
       }
       actions={
         <div className="text-right text-sm">
-          <div>Custo: {formatMoeda(a.custoTotal)}</div>
-          <div>Receita: {formatMoeda(a.receita)}</div>
+          <div>Custo: {formatMoeda(a.custoTotal ?? 0)}</div>
+          <div>Receita: {formatMoeda(a.receita ?? 0)}</div>
         </div>
       }
     />
   );
+  };
 
   return (
     <div className="space-y-6">

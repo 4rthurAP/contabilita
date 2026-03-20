@@ -81,6 +81,10 @@ function CompararRegimesSection() {
           </div>
         </form>
 
+        {compareRegimes.isError && (
+          <p className="text-sm text-destructive">Erro ao comparar regimes. Verifique os valores e tente novamente.</p>
+        )}
+
         {results && results.length > 0 && (
           <DataTable
             columns={columns}
@@ -167,6 +171,10 @@ function SimplesNacionalSection() {
           </div>
         </form>
 
+        {simplesRates.isError && (
+          <p className="text-sm text-destructive">Erro ao consultar aliquotas. Verifique o CNAE e tente novamente.</p>
+        )}
+
         {result && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
@@ -250,6 +258,10 @@ function PisCofinsSection() {
             </Button>
           </div>
         </form>
+
+        {pisCofins.isError && (
+          <p className="text-sm text-destructive">Erro ao buscar PIS/COFINS. Verifique o NCM e tente novamente.</p>
+        )}
 
         {results.length > 0 && (
           <DataTable

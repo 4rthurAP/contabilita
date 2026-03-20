@@ -142,10 +142,11 @@ function HeroSection() {
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </button>
           <button
+            type="button"
             onClick={() => navigate('/login')}
             className="flex items-center gap-2 px-8 py-3.5 text-base font-medium text-zinc-300 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-            Ver demonstracao
+            Acessar plataforma
           </button>
         </div>
 

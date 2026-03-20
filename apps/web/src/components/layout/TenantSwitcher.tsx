@@ -49,10 +49,10 @@ export function TenantSwitcher() {
 
   if (tenants.length <= 1) {
     return (
-      <Button variant="outline" size="sm" className="gap-2 justify-between w-full sm:w-auto sm:min-w-[11.25rem]">
-        <Building2 className="h-3.5 w-3.5 shrink-0" />
+      <div className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 h-8 text-sm sm:min-w-[11.25rem]">
+        <Building2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         <span className="truncate">{currentTenant?.name || 'Selecionar'}</span>
-      </Button>
+      </div>
     );
   }
 

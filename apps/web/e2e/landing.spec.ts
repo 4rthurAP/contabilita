@@ -33,7 +33,7 @@ test.describe('Landing Page', () => {
 
   test('hero CTA buttons are visible and clickable', async ({ page }) => {
     await expect(page.getByRole('button', { name: /Comecar gratuitamente/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Ver demonstracao/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Acessar plataforma/i })).toBeVisible();
   });
 
   test('CTA button navigates to register page', async ({ page }) => {

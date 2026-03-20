@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { LandingPage } from '@/features/landing/pages/LandingPage';
@@ -69,13 +69,13 @@ export function AppRoutes() {
         <Route path="accounting/trial-balance" element={<TrialBalancePage />} />
 
         {/* Escrita Fiscal */}
-        <Route path="fiscal" element={<InvoicesPage />} />
+        <Route path="fiscal" element={<Navigate to="invoices" replace />} />
         <Route path="fiscal/invoices" element={<InvoicesPage />} />
         <Route path="fiscal/assessment" element={<TaxAssessmentPage />} />
         <Route path="fiscal/payments" element={<TaxPaymentsPage />} />
 
         {/* Folha de Pagamento */}
-        <Route path="payroll" element={<PayrollRunsPage />} />
+        <Route path="payroll" element={<Navigate to="runs" replace />} />
         <Route path="payroll/employees" element={<EmployeesPage />} />
         <Route path="payroll/runs" element={<PayrollRunsPage />} />
 
@@ -107,12 +107,12 @@ export function AppRoutes() {
         <Route path="registro/:id" element={<RegistroDetailPage />} />
 
         {/* Administrar */}
-        <Route path="administrar" element={<TarefasPage />} />
+        <Route path="administrar" element={<Navigate to="tarefas" replace />} />
         <Route path="administrar/tarefas" element={<TarefasPage />} />
         <Route path="administrar/produtividade" element={<ProdutividadePage />} />
 
         {/* Honorarios */}
-        <Route path="honorarios" element={<ContratosPage />} />
+        <Route path="honorarios" element={<Navigate to="contratos" replace />} />
         <Route path="honorarios/contratos" element={<ContratosPage />} />
         <Route path="honorarios/cobrancas" element={<CobrancasPage />} />
         <Route path="honorarios/fluxo-caixa" element={<FluxoCaixaPage />} />
@@ -124,7 +124,7 @@ export function AppRoutes() {
         <Route path="cct" element={<CctPage />} />
 
         {/* Custos */}
-        <Route path="custos" element={<TimeTrackingPage />} />
+        <Route path="custos" element={<Navigate to="time-tracking" replace />} />
         <Route path="custos/time-tracking" element={<TimeTrackingPage />} />
         <Route path="custos/analysis" element={<CustosAnalysisPage />} />
 
