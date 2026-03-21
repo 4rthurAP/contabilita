@@ -24,10 +24,13 @@ import { HonorariosModule } from './modules/honorarios/honorarios.module';
 import { RegistroModule } from './modules/registro/registro.module';
 import { AdministrarModule } from './modules/administrar/administrar.module';
 import { BuscaNfeModule } from './modules/busca-nfe/busca-nfe.module';
+import { CertificateModule } from './modules/certificate/certificate.module';
 import { EmployeePortalModule } from './modules/employee-portal/employee-portal.module';
 import { CctModule } from './modules/cct/cct.module';
 import { CustosModule } from './modules/custos/custos.module';
 import { ProtocoloModule } from './modules/protocolo/protocolo.module';
+import { QueueModule } from './modules/queue/queue.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { TenantMiddleware } from './modules/tenant/tenant.middleware';
 import databaseConfig from './config/database.config';
 
@@ -70,6 +73,9 @@ import databaseConfig from './config/database.config';
     CctModule,
     CustosModule,
     ProtocoloModule,
+    QueueModule,
+    CertificateModule,
+    DashboardModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

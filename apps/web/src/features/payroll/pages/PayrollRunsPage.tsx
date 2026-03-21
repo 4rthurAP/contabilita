@@ -3,6 +3,7 @@ import { Plus, Calculator, Check, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select } from '@/components/ui/select';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
 import { LoadingState } from '@/components/molecules/loading-state';
@@ -18,10 +19,29 @@ import {
 } from '../hooks/usePayroll';
 import { formatMoeda, d128 } from '@/utils/formatters';
 
+const TIPO_FOLHA_OPTIONS = [
+  { value: 'mensal', label: 'Mensal' },
+  { value: 'ferias', label: 'Ferias' },
+  { value: '13_primeira_parcela', label: '13o — 1a Parcela' },
+  { value: '13_segunda_parcela', label: '13o — 2a Parcela' },
+  { value: 'rescisao', label: 'Rescisao' },
+  { value: 'complementar', label: 'Complementar' },
+];
+
+const TIPO_LABEL: Record<string, string> = {
+  mensal: 'Mensal',
+  ferias: 'Ferias',
+  '13_primeira_parcela': '13o 1a Parcela',
+  '13_segunda_parcela': '13o 2a Parcela',
+  rescisao: 'Rescisao',
+  complementar: 'Complementar',
+};
+
 function PayrollRunsContent({ companyId }: { companyId: string }) {
   const now = new Date();
   const [newYear, setNewYear] = useState(now.getFullYear());
   const [newMonth, setNewMonth] = useState(now.getMonth() + 1);
+  const [newTipo, setNewTipo] = useState('mensal');
   const [expandedRun, setExpandedRun] = useState<string | null>(null);
 
   const { data: runs, isLoading } = usePayrollRuns(companyId);
@@ -34,12 +54,22 @@ function PayrollRunsContent({ companyId }: { companyId: string }) {
     <div className="space-y-6">
       <PageHeader
         title="Folha de Pagamento"
-        description="Execucao mensal da folha"
+        description="Execucao de folha mensal, ferias, 13o e rescisao"
         actions={
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
             <Input type="number" value={newYear} onChange={(e) => setNewYear(+e.target.value)} className="w-20" />
             <Input type="number" min={1} max={12} value={newMonth} onChange={(e) => setNewMonth(+e.target.value)} className="w-16" />
-            <Button onClick={() => createRun.mutate({ year: newYear, month: newMonth })} disabled={createRun.isPending}>
+            <Select value={newTipo} onChange={(e) => setNewTipo(e.target.value)} className="w-44">
+              {TIPO_FOLHA_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </Select>
+            <Button
+              onClick={() => createRun.mutate({ year: newYear, month: newMonth, tipo: newTipo })}
+              disabled={createRun.isPending}
+            >
               <Plus className="mr-2 h-4 w-4" />
               Criar Folha
             </Button>
@@ -52,7 +82,7 @@ function PayrollRunsContent({ companyId }: { companyId: string }) {
       ) : !runs || runs.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            Nenhuma folha criada. Crie a primeira folha mensal.
+            Nenhuma folha criada. Selecione o tipo e crie a primeira folha.
           </CardContent>
         </Card>
       ) : (
@@ -63,7 +93,12 @@ function PayrollRunsContent({ companyId }: { companyId: string }) {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-1">
                     <CardTitle className="text-base flex flex-wrap items-center gap-2">
-                      <span>{String(run.month).padStart(2, '0')}/{run.year} - {run.tipo}</span>
+                      <span>
+                        {String(run.month).padStart(2, '0')}/{run.year}
+                      </span>
+                      <span className="text-muted-foreground font-normal">
+                        {TIPO_LABEL[run.tipo] ?? run.tipo}
+                      </span>
                       <StatusBadge status={run.status} statusMap={PAYROLL_STATUS_MAP} />
                     </CardTitle>
                     {run.totalFuncionarios > 0 && (
@@ -96,7 +131,7 @@ function PayrollRunsContent({ companyId }: { companyId: string }) {
                         </Button>
                       </>
                     )}
-                    {run.status === 'aprovada' && (
+                    {(run.status === 'aprovada' || run.status === 'fechada') && (
                       <Button size="sm" variant="outline" onClick={() => setExpandedRun(expandedRun === run._id ? null : run._id)}>
                         <FileText className="mr-1 h-3.5 w-3.5" />
                         Holerites

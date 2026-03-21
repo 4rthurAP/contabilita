@@ -16,13 +16,15 @@ export class PayrollRunController {
 
   @Post(':year/:month')
   @Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
-  @ApiOperation({ summary: 'Criar folha mensal' })
+  @ApiOperation({ summary: 'Criar folha (mensal, ferias, 13o, rescisao)' })
+  @ApiQuery({ name: 'tipo', required: false, description: 'Tipo: mensal, ferias, 13_primeira_parcela, 13_segunda_parcela, rescisao' })
   create(
     @Param('companyId') companyId: string,
     @Param('year') year: number,
     @Param('month') month: number,
+    @Query('tipo') tipo?: string,
   ) {
-    return this.payrollRunService.create(companyId, year, month);
+    return this.payrollRunService.create(companyId, year, month, tipo as any);
   }
 
   @Patch(':id/calculate')

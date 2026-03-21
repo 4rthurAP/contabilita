@@ -11,8 +11,12 @@ import { InvoiceController } from './controllers/invoice.controller';
 import { TaxAssessmentController } from './controllers/tax-assessment.controller';
 import { TaxPaymentController } from './controllers/tax-payment.controller';
 import { InvoicePostedListener } from './listeners/invoice-posted.listener';
+import { FiscalScheduler } from './fiscal.scheduler';
 import { TenantModule } from '../tenant/tenant.module';
+import { AccountingModule } from '../accounting/accounting.module';
+import { QueueModule } from '../queue/queue.module';
 import { Company, CompanySchema } from '../company/schemas/company.schema';
+import { XmlProcessingProcessor } from './processors/xml-processing.processor';
 
 @Module({
   imports: [
@@ -23,6 +27,8 @@ import { Company, CompanySchema } from '../company/schemas/company.schema';
       { name: Company.name, schema: CompanySchema },
     ]),
     TenantModule,
+    AccountingModule,
+    QueueModule,
   ],
   controllers: [InvoiceController, TaxAssessmentController, TaxPaymentController],
   providers: [
@@ -31,6 +37,8 @@ import { Company, CompanySchema } from '../company/schemas/company.schema';
     TaxPaymentService,
     TaxCalculationFactory,
     InvoicePostedListener,
+    FiscalScheduler,
+    XmlProcessingProcessor,
   ],
   exports: [InvoiceService, TaxAssessmentService, TaxPaymentService],
 })

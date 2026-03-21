@@ -25,5 +25,7 @@ export type AppSubject =
   | 'Registro'
   | 'Administrar'
   | 'BuscaNfe'
+  | 'Certificate'
+  | 'QueueAdmin'
   | 'Settings'
   | 'all';

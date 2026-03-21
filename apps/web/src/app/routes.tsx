@@ -39,6 +39,8 @@ import { CctPage } from '@/features/cct/pages/CctPage';
 import { TimeTrackingPage } from '@/features/custos/pages/TimeTrackingPage';
 import { CustosAnalysisPage } from '@/features/custos/pages/CustosAnalysisPage';
 import { ProtocoloPage } from '@/features/protocolo/pages/ProtocoloPage';
+import { CertificatesPage } from '@/features/certificates/pages/CertificatesPage';
+import { QueuesPage } from '@/features/admin/pages/QueuesPage';
 
 export function AppRoutes() {
   return (
@@ -133,6 +135,12 @@ export function AppRoutes() {
 
         {/* Busca NF-e */}
         <Route path="busca-nfe" element={<BuscaNfePage />} />
+
+        {/* Certificados Digitais */}
+        <Route path="certificates" element={<CertificatesPage />} />
+
+        {/* Admin */}
+        <Route path="admin/queues" element={<QueuesPage />} />
       </Route>
     </Routes>
   );

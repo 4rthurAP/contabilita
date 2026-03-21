@@ -24,3 +24,4 @@ export * from './permissions/define-ability.js';
 export * from './constants/tax-tables.constants.js';
 export * from './constants/simples-nacional-rates.constants.js';
 export * from './constants/pis-cofins-ipi.constants.js';
+export * from './constants/icms-rates.constants.js';

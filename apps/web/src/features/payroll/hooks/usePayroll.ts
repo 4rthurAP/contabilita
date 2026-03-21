@@ -31,8 +31,8 @@ export function usePayrollRuns(companyId: string, year?: number) {
 export function useCreatePayrollRun(companyId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ year, month }: { year: number; month: number }) =>
-      payrollService.createPayrollRun(companyId, year, month),
+    mutationFn: ({ year, month, tipo }: { year: number; month: number; tipo?: string }) =>
+      payrollService.createPayrollRun(companyId, year, month, tipo),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['payroll-runs'] }),
   });
 }

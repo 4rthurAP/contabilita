@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a1a; line-height: 1.6; margin: 0; padding: 0; background: #f4f4f5; }
+    .container { max-width: 560px; margin: 40px auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .header { background: #18181b; padding: 24px 32px; }
+    .header h1 { color: #fff; font-size: 18px; font-weight: 600; margin: 0; letter-spacing: -0.02em; }
+    .body { padding: 32px; }
+    .payment-box { background: #f4f4f5; border-radius: 8px; padding: 16px; margin: 16px 0; }
+    .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e4e4e7; }
+    .row:last-child { border-bottom: none; font-weight: 600; }
+    .label { font-size: 12px; color: #71717a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .footer { padding: 24px 32px; border-top: 1px solid #e4e4e7; font-size: 12px; color: #a1a1aa; text-align: center; }
+    .btn { display: inline-block; background: #18181b; color: #fff; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 500; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Contabilita</h1>
+    </div>
+    <div class="body">
+      <h2 style="margin-top:0">Guia de Pagamento Vencendo</h2>
+      <p>{{mensagem}}</p>
+
+      <div class="payment-box">
+        <div class="row"><span>Tipo</span><span>{{tipoGuia}} — {{tipo}}</span></div>
+        <div class="row"><span>Competencia</span><span>{{competencia}}</span></div>
+        <div class="row"><span>Vencimento</span><span>{{vencimento}}</span></div>
+        <div class="row"><span>Valor</span><span>R$ {{valor}}</span></div>
+      </div>
+
+      {{#if link}}
+      <p style="text-align:center; margin-top:24px">
+        <a href="{{baseUrl}}{{link}}" class="btn">Ver guias</a>
+      </p>
+      {{/if}}
+    </div>
+    <div class="footer">
+      Este email foi enviado automaticamente pelo Contabilita.<br>
+      Voce recebe esta notificacao por ter guias de pagamento proximas do vencimento.
+    </div>
+  </div>
+</body>
+</html>

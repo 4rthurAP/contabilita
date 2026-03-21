@@ -27,6 +27,7 @@ export function defineAbilityFor(role: TenantRole): AppAbility {
         'Protocolo',
         'Registro',
         'BuscaNfe',
+        'Certificate',
         'TaxAssessment',
         'TaxPayment',
         'TaxUpdate',

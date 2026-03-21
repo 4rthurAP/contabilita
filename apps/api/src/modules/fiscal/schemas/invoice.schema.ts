@@ -11,6 +11,10 @@ export class InvoiceItemTax {
   @Prop({ required: true, enum: Object.values(TipoImposto) })
   tipo: TipoImposto;
 
+  /** Subtipo: ST (Substituicao Tributaria), DIFAL, etc. */
+  @Prop()
+  subtipo?: string;
+
   @Prop({ type: MongooseSchema.Types.Decimal128, required: true })
   baseCalculo: Types.Decimal128;
 

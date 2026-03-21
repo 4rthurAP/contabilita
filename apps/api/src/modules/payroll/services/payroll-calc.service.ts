@@ -137,4 +137,116 @@ export class PayrollCalcService {
     }
     return proporcional; // 2a parcela e o valor integral (descontos calculados sobre total)
   }
+
+  /**
+   * Calculo completo de rescisao trabalhista.
+   * Inclui: saldo de salario, ferias proporcionais + 1/3, 13o proporcional,
+   * aviso previo (se indenizado), multa FGTS 40%.
+   */
+  calcularRescisao(params: {
+    salarioBruto: Decimal;
+    dataAdmissao: Date;
+    dataDesligamento: Date;
+    numDependentes: number;
+    diasTrabalhadosMes: number;
+    avisoPrevioIndenizado: boolean;
+    motivoRescisao: 'sem_justa_causa' | 'com_justa_causa' | 'pedido_demissao';
+    saldoFgts: Decimal;
+  }): RescisaoResult {
+    const {
+      salarioBruto,
+      dataAdmissao,
+      dataDesligamento,
+      numDependentes,
+      diasTrabalhadosMes,
+      avisoPrevioIndenizado,
+      motivoRescisao,
+      saldoFgts,
+    } = params;
+
+    const valorDia = salarioBruto.dividedBy(30);
+
+    // 1. Saldo de salario (dias trabalhados no mes)
+    const saldoSalario = valorDia.times(diasTrabalhadosMes).toDecimalPlaces(2);
+
+    // 2. Ferias proporcionais + 1/3
+    const mesesDesdeUltimasFerias = this.calcularMesesProporcionais(dataAdmissao, dataDesligamento);
+    const feriasProporcionais = salarioBruto.times(mesesDesdeUltimasFerias).dividedBy(12).toDecimalPlaces(2);
+    const tercoFerias = feriasProporcionais.dividedBy(3).toDecimalPlaces(2);
+
+    // 3. 13o proporcional (meses trabalhados no ano)
+    const mesesNoAno = dataDesligamento.getMonth() + 1;
+    const decimoTerceiroProporcional = salarioBruto.times(mesesNoAno).dividedBy(12).toDecimalPlaces(2);
+
+    // 4. Aviso previo (30 dias + 3 dias por ano de servico, max 90 dias)
+    let avisoPrevio = new Decimal(0);
+    if (avisoPrevioIndenizado && motivoRescisao === 'sem_justa_causa') {
+      const anosServico = Math.floor(
+        (dataDesligamento.getTime() - dataAdmissao.getTime()) / (365.25 * 24 * 60 * 60 * 1000),
+      );
+      const diasAviso = Math.min(30 + anosServico * 3, 90);
+      avisoPrevio = valorDia.times(diasAviso).toDecimalPlaces(2);
+    }
+
+    // 5. Multa FGTS 40% (apenas sem justa causa)
+    let multaFgts = new Decimal(0);
+    if (motivoRescisao === 'sem_justa_causa') {
+      const fgtsMes = this.calcularFgts(salarioBruto);
+      const fgtsAvisoPrevio = avisoPrevioIndenizado ? this.calcularFgts(avisoPrevio) : new Decimal(0);
+      const fgtsTotal = saldoFgts.plus(fgtsMes).plus(fgtsAvisoPrevio);
+      multaFgts = fgtsTotal.times(0.4).toDecimalPlaces(2);
+    }
+
+    // Totais
+    const totalBruto = saldoSalario
+      .plus(feriasProporcionais)
+      .plus(tercoFerias)
+      .plus(decimoTerceiroProporcional)
+      .plus(avisoPrevio);
+
+    // Descontos (INSS e IRRF sobre o saldo de salario + 13o)
+    const baseDescontos = saldoSalario.plus(decimoTerceiroProporcional);
+    const inss = this.calcularInss(baseDescontos);
+    const baseIrrf = this.calcularBaseIrrf(baseDescontos, inss, numDependentes);
+    const irrf = this.calcularIrrf(baseIrrf);
+
+    const totalDescontos = inss.plus(irrf);
+    const totalLiquido = totalBruto.minus(totalDescontos).plus(multaFgts);
+
+    return {
+      saldoSalario,
+      feriasProporcionais,
+      tercoFerias,
+      decimoTerceiroProporcional,
+      avisoPrevio,
+      multaFgts,
+      inss,
+      irrf,
+      totalBruto,
+      totalDescontos,
+      totalLiquido,
+    };
+  }
+
+  /** Calcula meses proporcionais entre duas datas (para ferias) */
+  private calcularMesesProporcionais(inicio: Date, fim: Date): number {
+    const diffMs = fim.getTime() - inicio.getTime();
+    const mesesCompletos = Math.floor(diffMs / (30.44 * 24 * 60 * 60 * 1000));
+    // Considera fracao >= 15 dias como mes completo
+    return Math.min(mesesCompletos, 12);
+  }
+}
+
+export interface RescisaoResult {
+  saldoSalario: Decimal;
+  feriasProporcionais: Decimal;
+  tercoFerias: Decimal;
+  decimoTerceiroProporcional: Decimal;
+  avisoPrevio: Decimal;
+  multaFgts: Decimal;
+  inss: Decimal;
+  irrf: Decimal;
+  totalBruto: Decimal;
+  totalDescontos: Decimal;
+  totalLiquido: Decimal;
 }

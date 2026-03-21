@@ -63,8 +63,8 @@ export const payrollService = {
   getPayrollRuns: (companyId: string, year?: number) =>
     api.get(`/companies/${companyId}/payroll-runs`, { params: { year } }).then((r) => r.data),
 
-  createPayrollRun: (companyId: string, year: number, month: number) =>
-    api.post(`/companies/${companyId}/payroll-runs/${year}/${month}`).then((r) => r.data),
+  createPayrollRun: (companyId: string, year: number, month: number, tipo?: string) =>
+    api.post(`/companies/${companyId}/payroll-runs/${year}/${month}`, null, { params: tipo ? { tipo } : {} }).then((r) => r.data),
 
   calculatePayroll: (companyId: string, id: string) =>
     api.patch(`/companies/${companyId}/payroll-runs/${id}/calculate`).then((r) => r.data),

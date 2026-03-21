@@ -8,6 +8,8 @@ import { AccountService } from './services/account.service';
 import { JournalEntryService } from './services/journal-entry.service';
 import { CostCenterService } from './services/cost-center.service';
 import { AccountingPeriodService } from './services/accounting-period.service';
+import { AccountingTemplateService } from './services/accounting-template.service';
+import { AccountingTemplate, AccountingTemplateSchema } from './schemas/accounting-template.schema';
 import { AccountController } from './controllers/account.controller';
 import { JournalEntryController } from './controllers/journal-entry.controller';
 import { CostCenterController } from './controllers/cost-center.controller';
@@ -21,6 +23,7 @@ import { TenantModule } from '../tenant/tenant.module';
       { name: JournalEntry.name, schema: JournalEntrySchema },
       { name: CostCenter.name, schema: CostCenterSchema },
       { name: AccountingPeriod.name, schema: AccountingPeriodSchema },
+      { name: AccountingTemplate.name, schema: AccountingTemplateSchema },
     ]),
     TenantModule,
   ],
@@ -30,7 +33,7 @@ import { TenantModule } from '../tenant/tenant.module';
     CostCenterController,
     AccountingPeriodController,
   ],
-  providers: [AccountService, JournalEntryService, CostCenterService, AccountingPeriodService],
-  exports: [AccountService, JournalEntryService],
+  providers: [AccountService, JournalEntryService, CostCenterService, AccountingPeriodService, AccountingTemplateService],
+  exports: [AccountService, JournalEntryService, AccountingTemplateService],
 })
 export class AccountingModule {}

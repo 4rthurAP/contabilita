@@ -86,6 +86,16 @@ export class AccountService {
     return account;
   }
 
+  /** Busca conta pelo codigo (ex: '4.1.01.001') */
+  async findByCode(companyId: string, codigo: string) {
+    const ctx = requireCurrentTenant();
+    return this.accountModel.findOne({
+      tenantId: ctx.tenantId,
+      companyId,
+      codigo,
+    });
+  }
+
   async update(companyId: string, id: string, dto: UpdateAccountDto) {
     const ctx = requireCurrentTenant();
     const account = await this.accountModel.findOneAndUpdate(

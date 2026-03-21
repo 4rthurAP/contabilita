@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import Decimal from 'decimal.js';
 import { PayrollRun, PayrollRunDocument } from '../schemas/payroll-run.schema';
 import { Payslip, PayslipDocument } from '../schemas/payslip.schema';
@@ -16,6 +17,7 @@ export class PayrollRunService {
     @InjectModel(Payslip.name) private payslipModel: Model<PayslipDocument>,
     @InjectModel(Employee.name) private employeeModel: Model<EmployeeDocument>,
     private calcService: PayrollCalcService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   /** Cria uma folha mensal em status rascunho */
@@ -37,6 +39,7 @@ export class PayrollRunService {
 
   /**
    * Calcula a folha: gera holerites para todos os funcionarios ativos.
+   * Despacha para metodo especifico conforme o tipo da folha.
    */
   async calculate(companyId: string, id: string) {
     const ctx = requireCurrentTenant();
@@ -47,13 +50,16 @@ export class PayrollRunService {
       throw new BadRequestException('Folha ja foi calculada. Crie uma nova ou reabra.');
     }
 
-    // Buscar funcionarios ativos
+    // Buscar funcionarios ativos (ou todos para rescisao)
+    const statusFilter = run.tipo === TipoFolha.Rescisao
+      ? {} // Rescisao pode incluir funcionarios sendo desligados
+      : { status: StatusFuncionario.Ativo };
     const employees = await this.employeeModel.find({
-      tenantId: ctx.tenantId, companyId, status: StatusFuncionario.Ativo,
+      tenantId: ctx.tenantId, companyId, ...statusFilter,
     });
 
     if (employees.length === 0) {
-      throw new BadRequestException('Nenhum funcionario ativo encontrado');
+      throw new BadRequestException('Nenhum funcionario encontrado');
     }
 
     // Limpar payslips anteriores (recalculo)
@@ -68,16 +74,10 @@ export class PayrollRunService {
 
     for (const emp of employees) {
       const salario = new Decimal(emp.salarioBase.toString());
-      const numDep = emp.dependentes?.filter((d) => d.deducaoIrrf).length || 0;
+      const numDep = emp.dependentes?.filter((d: any) => d.deducaoIrrf).length || 0;
 
-      const calc = this.calcService.calculate(salario, numDep);
-
-      const lines = [
-        { codigo: '001', descricao: 'Salario Base', tipo: TipoRubrica.Provento, referencia: '30', valor: calc.salarioBruto.toString() },
-        { codigo: '100', descricao: 'INSS', tipo: TipoRubrica.Desconto, referencia: '0', valor: calc.inss.toString() },
-        { codigo: '101', descricao: 'IRRF', tipo: TipoRubrica.Desconto, referencia: numDep.toString(), valor: calc.irrf.toString() },
-        { codigo: '900', descricao: 'FGTS', tipo: TipoRubrica.Informativa, referencia: '8', valor: calc.fgts.toString() },
-      ];
+      const { lines, proventos, descontos, liquido, inss, irrf, fgts } =
+        this.buildPayslipByTipo(run.tipo, salario, numDep, emp);
 
       await this.payslipModel.create({
         tenantId: ctx.tenantId,
@@ -87,22 +87,22 @@ export class PayrollRunService {
         employeeName: emp.nome,
         employeeCpf: emp.cpf,
         lines,
-        totalProventos: calc.totalProventos.toString(),
-        totalDescontos: calc.totalDescontos.toString(),
-        salarioLiquido: calc.salarioLiquido.toString(),
-        baseInss: calc.salarioBruto.toString(),
-        valorInss: calc.inss.toString(),
-        baseIrrf: calc.baseIrrf.toString(),
-        valorIrrf: calc.irrf.toString(),
-        valorFgts: calc.fgts.toString(),
+        totalProventos: proventos.toString(),
+        totalDescontos: descontos.toString(),
+        salarioLiquido: liquido.toString(),
+        baseInss: salario.toString(),
+        valorInss: inss.toString(),
+        baseIrrf: salario.toString(),
+        valorIrrf: irrf.toString(),
+        valorFgts: fgts.toString(),
       });
 
-      totalBruto = totalBruto.plus(calc.totalProventos);
-      totalDescontos = totalDescontos.plus(calc.totalDescontos);
-      totalLiquido = totalLiquido.plus(calc.salarioLiquido);
-      totalInss = totalInss.plus(calc.inss);
-      totalIrrf = totalIrrf.plus(calc.irrf);
-      totalFgts = totalFgts.plus(calc.fgts);
+      totalBruto = totalBruto.plus(proventos);
+      totalDescontos = totalDescontos.plus(descontos);
+      totalLiquido = totalLiquido.plus(liquido);
+      totalInss = totalInss.plus(inss);
+      totalIrrf = totalIrrf.plus(irrf);
+      totalFgts = totalFgts.plus(fgts);
     }
 
     run.status = StatusFolha.Calculada;
@@ -116,7 +116,168 @@ export class PayrollRunService {
     run.calculatedAt = new Date();
     await run.save();
 
+    // Emite evento para geracao automatica de lancamentos contabeis
+    this.eventEmitter.emit('payroll.run.completed', {
+      tenantId: ctx.tenantId,
+      companyId,
+      runId: run._id.toString(),
+      tipo: run.tipo,
+      year: run.year,
+      month: run.month,
+      totalBruto: totalBruto.toString(),
+      totalDescontos: totalDescontos.toString(),
+      totalLiquido: totalLiquido.toString(),
+      totalInss: totalInss.toString(),
+      totalIrrf: totalIrrf.toString(),
+      totalFgts: totalFgts.toString(),
+    });
+
     return run;
+  }
+
+  /** Constroi as linhas do holerite conforme o tipo de folha */
+  private buildPayslipByTipo(
+    tipo: TipoFolha,
+    salario: Decimal,
+    numDep: number,
+    emp: any,
+  ) {
+    switch (tipo) {
+      case TipoFolha.Ferias:
+        return this.buildFeriasPayslip(salario, numDep);
+      case TipoFolha.DecimoTerceiroPrimeiraParcela:
+        return this.build13oPayslip(salario, numDep, 1, emp);
+      case TipoFolha.DecimoTerceiroSegundaParcela:
+        return this.build13oPayslip(salario, numDep, 2, emp);
+      case TipoFolha.Rescisao:
+        return this.buildRescisaoPayslip(salario, numDep, emp);
+      default:
+        return this.buildMensalPayslip(salario, numDep);
+    }
+  }
+
+  private buildMensalPayslip(salario: Decimal, numDep: number) {
+    const calc = this.calcService.calculate(salario, numDep);
+    const lines = [
+      { codigo: '001', descricao: 'Salario Base', tipo: TipoRubrica.Provento, referencia: '30', valor: calc.salarioBruto.toString() },
+      { codigo: '100', descricao: 'INSS', tipo: TipoRubrica.Desconto, referencia: '0', valor: calc.inss.toString() },
+      { codigo: '101', descricao: 'IRRF', tipo: TipoRubrica.Desconto, referencia: numDep.toString(), valor: calc.irrf.toString() },
+      { codigo: '900', descricao: 'FGTS', tipo: TipoRubrica.Informativa, referencia: '8', valor: calc.fgts.toString() },
+    ];
+    return {
+      lines,
+      proventos: calc.totalProventos,
+      descontos: calc.totalDescontos,
+      liquido: calc.salarioLiquido,
+      inss: calc.inss,
+      irrf: calc.irrf,
+      fgts: calc.fgts,
+    };
+  }
+
+  private buildFeriasPayslip(salario: Decimal, numDep: number) {
+    const ferias = this.calcService.calcularFerias(salario, 30, 0);
+    const inss = this.calcService.calcularInss(ferias.total);
+    const baseIrrf = this.calcService.calcularBaseIrrf(ferias.total, inss, numDep);
+    const irrf = this.calcService.calcularIrrf(baseIrrf);
+    const fgts = this.calcService.calcularFgts(ferias.total);
+    const descontos = inss.plus(irrf);
+
+    const lines = [
+      { codigo: '010', descricao: 'Ferias (30 dias)', tipo: TipoRubrica.Provento, referencia: '30', valor: ferias.valorFerias.toString() },
+      { codigo: '011', descricao: '1/3 Constitucional', tipo: TipoRubrica.Provento, referencia: '0', valor: ferias.tercoConstitucional.toString() },
+      { codigo: '100', descricao: 'INSS', tipo: TipoRubrica.Desconto, referencia: '0', valor: inss.toString() },
+      { codigo: '101', descricao: 'IRRF', tipo: TipoRubrica.Desconto, referencia: numDep.toString(), valor: irrf.toString() },
+      { codigo: '900', descricao: 'FGTS', tipo: TipoRubrica.Informativa, referencia: '8', valor: fgts.toString() },
+    ];
+
+    return {
+      lines,
+      proventos: ferias.total,
+      descontos,
+      liquido: ferias.total.minus(descontos),
+      inss,
+      irrf,
+      fgts,
+    };
+  }
+
+  private build13oPayslip(salario: Decimal, numDep: number, parcela: 1 | 2, emp: any) {
+    const dataAdmissao = emp.dataAdmissao ? new Date(emp.dataAdmissao) : new Date();
+    const mesesTrabalhados = Math.min(new Date().getMonth() + 1, 12);
+    const valor13 = this.calcService.calcular13o(salario, mesesTrabalhados, parcela);
+
+    const lines: any[] = [
+      { codigo: '020', descricao: `13o Salario (${parcela}a parcela)`, tipo: TipoRubrica.Provento, referencia: mesesTrabalhados.toString(), valor: valor13.toString() },
+    ];
+
+    let inss = new Decimal(0);
+    let irrf = new Decimal(0);
+    let descontos = new Decimal(0);
+
+    if (parcela === 2) {
+      // Descontos apenas na 2a parcela (sobre o valor integral)
+      const valorIntegral = this.calcService.calcular13o(salario, mesesTrabalhados, 2);
+      inss = this.calcService.calcularInss(valorIntegral);
+      const baseIrrf = this.calcService.calcularBaseIrrf(valorIntegral, inss, numDep);
+      irrf = this.calcService.calcularIrrf(baseIrrf);
+      descontos = inss.plus(irrf);
+      lines.push(
+        { codigo: '100', descricao: 'INSS', tipo: TipoRubrica.Desconto, referencia: '0', valor: inss.toString() },
+        { codigo: '101', descricao: 'IRRF', tipo: TipoRubrica.Desconto, referencia: numDep.toString(), valor: irrf.toString() },
+      );
+    }
+
+    const fgts = this.calcService.calcularFgts(valor13);
+    lines.push({ codigo: '900', descricao: 'FGTS', tipo: TipoRubrica.Informativa, referencia: '8', valor: fgts.toString() });
+
+    return {
+      lines,
+      proventos: valor13,
+      descontos,
+      liquido: valor13.minus(descontos),
+      inss,
+      irrf,
+      fgts,
+    };
+  }
+
+  private buildRescisaoPayslip(salario: Decimal, numDep: number, emp: any) {
+    const dataAdmissao = emp.dataAdmissao ? new Date(emp.dataAdmissao) : new Date();
+    const dataDesligamento = new Date();
+    const diasTrabalhados = dataDesligamento.getDate();
+
+    const rescisao = this.calcService.calcularRescisao({
+      salarioBruto: salario,
+      dataAdmissao,
+      dataDesligamento,
+      numDependentes: numDep,
+      diasTrabalhadosMes: diasTrabalhados,
+      avisoPrevioIndenizado: true,
+      motivoRescisao: 'sem_justa_causa',
+      saldoFgts: new Decimal(0), // Simplificado - idealmente viria do historico
+    });
+
+    const lines = [
+      { codigo: '030', descricao: 'Saldo de Salario', tipo: TipoRubrica.Provento, referencia: diasTrabalhados.toString(), valor: rescisao.saldoSalario.toString() },
+      { codigo: '031', descricao: 'Ferias Proporcionais', tipo: TipoRubrica.Provento, referencia: '0', valor: rescisao.feriasProporcionais.toString() },
+      { codigo: '032', descricao: '1/3 Ferias', tipo: TipoRubrica.Provento, referencia: '0', valor: rescisao.tercoFerias.toString() },
+      { codigo: '033', descricao: '13o Proporcional', tipo: TipoRubrica.Provento, referencia: '0', valor: rescisao.decimoTerceiroProporcional.toString() },
+      { codigo: '034', descricao: 'Aviso Previo Indenizado', tipo: TipoRubrica.Provento, referencia: '0', valor: rescisao.avisoPrevio.toString() },
+      { codigo: '035', descricao: 'Multa FGTS 40%', tipo: TipoRubrica.Provento, referencia: '0', valor: rescisao.multaFgts.toString() },
+      { codigo: '100', descricao: 'INSS', tipo: TipoRubrica.Desconto, referencia: '0', valor: rescisao.inss.toString() },
+      { codigo: '101', descricao: 'IRRF', tipo: TipoRubrica.Desconto, referencia: numDep.toString(), valor: rescisao.irrf.toString() },
+    ];
+
+    return {
+      lines,
+      proventos: rescisao.totalBruto,
+      descontos: rescisao.totalDescontos,
+      liquido: rescisao.totalLiquido,
+      inss: rescisao.inss,
+      irrf: rescisao.irrf,
+      fgts: rescisao.multaFgts,
+    };
   }
 
   async approve(companyId: string, id: string) {
