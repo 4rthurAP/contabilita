@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Model } from 'mongoose';
+import { Queue } from 'bullmq';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BankAccount, BankAccountDocument } from '../schemas/bank-account.schema';
 import {
@@ -10,6 +12,8 @@ import {
 } from '../schemas/bank-transaction.schema';
 import { OfxParserService, ParsedOfxResult } from './ofx-parser.service';
 import { requireCurrentTenant } from '../../tenant/tenant.context';
+import { QUEUE_NAMES } from '../../queue/queue.constants';
+import type { ReconciliationJobData } from '../processors/bank-reconciliation.processor';
 
 @Injectable()
 export class BankReconciliationService {
@@ -20,6 +24,7 @@ export class BankReconciliationService {
     @InjectModel(BankTransaction.name) private transactionModel: Model<BankTransactionDocument>,
     private ofxParser: OfxParserService,
     private eventEmitter: EventEmitter2,
+    @InjectQueue(QUEUE_NAMES.BANK_RECONCILIATION) private reconciliationQueue: Queue<ReconciliationJobData>,
   ) {}
 
   // ── Bank Account CRUD ──────────────────────────
@@ -113,13 +118,20 @@ export class BankReconciliationService {
       `OFX importado: ${imported} novas, ${duplicates} duplicadas de ${parsed.transactions.length} total`,
     );
 
-    // Emitir evento para processamento assincrono (reconciliacao)
+    // Emitir evento e enfileirar conciliacao automatica
     if (imported > 0) {
       this.eventEmitter.emit('bank.transactions.imported', {
         tenantId: ctx.tenantId,
         companyId,
         bankAccountId,
         count: imported,
+      });
+
+      // Enfileirar conciliacao automatica
+      await this.reconciliationQueue.add('auto-reconcile', {
+        tenantContext: { tenantId: ctx.tenantId, userId: ctx.userId, role: ctx.role },
+        companyId,
+        bankAccountId,
       });
     }
 

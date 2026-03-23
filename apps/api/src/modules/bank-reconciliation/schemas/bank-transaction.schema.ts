@@ -64,6 +64,21 @@ export class BankTransaction {
   /** Origem da importacao */
   @Prop({ default: 'ofx' })
   source: string;
+
+  /** Sugestao de conciliacao automatica */
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'JournalEntry' })
+  suggestedJournalEntryId?: MongooseSchema.Types.ObjectId;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Invoice' })
+  suggestedInvoiceId?: MongooseSchema.Types.ObjectId;
+
+  /** Confianca da sugestao (0 a 1) */
+  @Prop({ type: Number, min: 0, max: 1 })
+  suggestionConfidence?: number;
+
+  /** Metodo usado na sugestao: 'exact_amount', 'memo_match', 'historical', 'cnpj_match' */
+  @Prop()
+  suggestionMethod?: string;
 }
 
 export const BankTransactionSchema = SchemaFactory.createForClass(BankTransaction);

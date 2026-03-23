@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a1a; line-height: 1.6; }
+    .container { max-width: 600px; margin: 0 auto; padding: 32px; }
+    .header { text-align: center; padding: 24px 0; border-bottom: 1px solid #e5e5e5; }
+    .header h1 { font-size: 20px; font-weight: 600; color: #1d4ed8; margin: 0; }
+    .content { padding: 32px 0; }
+    .invoice-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin: 24px 0; }
+    .invoice-row { display: flex; justify-content: space-between; padding: 8px 0; }
+    .invoice-label { color: #64748b; font-size: 14px; }
+    .invoice-value { font-weight: 600; font-size: 14px; }
+    .amount { font-size: 24px; font-weight: 700; color: #1d4ed8; text-align: center; padding: 16px 0; }
+    .cta { text-align: center; padding: 24px 0; }
+    .cta a { background: #1d4ed8; color: #fff; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 500; }
+    .footer { text-align: center; padding: 24px 0; border-top: 1px solid #e5e5e5; color: #94a3b8; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Contabilita</h1>
+    </div>
+    <div class="content">
+      <p>Prezado cliente,</p>
+      <p>Segue a fatura de honorarios contabeis referente ao periodo informado abaixo.</p>
+
+      <div class="invoice-box">
+        <div class="invoice-row">
+          <span class="invoice-label">Empresa</span>
+          <span class="invoice-value">{{empresa}}</span>
+        </div>
+        <div class="invoice-row">
+          <span class="invoice-label">Competencia</span>
+          <span class="invoice-value">{{competencia}}</span>
+        </div>
+        <div class="invoice-row">
+          <span class="invoice-label">Vencimento</span>
+          <span class="invoice-value">{{vencimento}}</span>
+        </div>
+        <div class="amount">R$ {{valor}}</div>
+      </div>
+
+      <div class="cta">
+        <a href="{{link}}">Acessar Portal</a>
+      </div>
+    </div>
+    <div class="footer">
+      <p>Este e um email automatico enviado pelo sistema Contabilita.</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -57,6 +57,16 @@ export class ObligationsController {
     return this.obligationsService.generateEfd(companyId, year, month);
   }
 
+  @Post('sped-reinf/:year/:month')
+  @ApiOperation({ summary: 'Gerar eventos EFD-Reinf' })
+  generateReinf(
+    @Param('companyId') companyId: string,
+    @Param('year') year: number,
+    @Param('month') month: number,
+  ) {
+    return this.obligationsService.generateReinf(companyId, year, month);
+  }
+
   @Get(':id/download')
   @ApiOperation({ summary: 'Download do arquivo gerado' })
   async download(@Param('companyId') companyId: string, @Param('id') id: string, @Res() res: Response) {
@@ -66,8 +76,17 @@ export class ObligationsController {
     res.send(content);
   }
 
-  @Patch(':id/transmit')
-  @ApiOperation({ summary: 'Marcar obrigacao como transmitida' })
+  @Post(':id/transmit')
+  @ApiOperation({ summary: 'Enfileirar transmissao SPED via certificado A1' })
+  enqueueTransmission(
+    @Param('companyId') companyId: string,
+    @Param('id') id: string,
+  ) {
+    return this.obligationsService.enqueueTransmission(companyId, id);
+  }
+
+  @Patch(':id/mark-transmitted')
+  @ApiOperation({ summary: 'Marcar obrigacao como transmitida manualmente' })
   markTransmitted(
     @Param('companyId') companyId: string,
     @Param('id') id: string,

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Model } from 'mongoose';
@@ -7,6 +7,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Notification, NotificationDocument } from './schemas/notification.schema';
 import { Obligation } from '../obligations/schemas/obligation.schema';
 import { TaxPayment } from '../fiscal/schemas/tax-payment.schema';
+import { NotificationGateway } from './notification.gateway';
 import { requireCurrentTenant } from '../tenant/tenant.context';
 import { QUEUE_NAMES } from '../queue/queue.constants';
 import type { EmailJobData } from './processors/notification-email.processor';
@@ -20,6 +21,7 @@ export class NotificationService {
     @InjectModel('Obligation') private obligationModel: Model<any>,
     @InjectModel('TaxPayment') private paymentModel: Model<any>,
     @InjectQueue(QUEUE_NAMES.NOTIFICATION_EMAIL) private emailQueue: Queue<EmailJobData>,
+    @Optional() private readonly gateway?: NotificationGateway,
   ) {}
 
   async getForUser(userId: string, onlyUnread = false) {
@@ -55,7 +57,41 @@ export class NotificationService {
     link?: string;
     dataReferencia?: Date;
   }) {
-    return this.notifModel.create(params);
+    const notif = await this.notifModel.create(params);
+
+    // Push via WebSocket se usuario esta online
+    if (this.gateway) {
+      if (params.userId) {
+        this.gateway.emitToUser(params.userId, {
+          id: notif._id,
+          tipo: params.tipo,
+          titulo: params.titulo,
+          mensagem: params.mensagem,
+          link: params.link,
+          createdAt: notif.createdAt,
+        });
+
+        // Atualizar contagem de nao lidas
+        const unreadCount = await this.notifModel.countDocuments({
+          tenantId: params.tenantId,
+          userId: params.userId,
+          lida: false,
+        });
+        this.gateway.emitUnreadCount(params.userId, unreadCount);
+      } else {
+        // Notificacao broadcast para todo o tenant
+        this.gateway.emitToTenant(params.tenantId, {
+          id: notif._id,
+          tipo: params.tipo,
+          titulo: params.titulo,
+          mensagem: params.mensagem,
+          link: params.link,
+          createdAt: notif.createdAt,
+        });
+      }
+    }
+
+    return notif;
   }
 
   /** Enfileira um email para envio assincrono */

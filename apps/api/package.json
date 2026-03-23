@@ -14,6 +14,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "@casl/ability": "^6.7.0",
     "@contabilita/shared": "workspace:*",
     "@nestjs-modules/mailer": "^2.3.0",
@@ -27,9 +28,11 @@
     "@nestjs/mongoose": "^11.0.0",
     "@nestjs/passport": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/platform-socket.io": "^11.1.17",
     "@nestjs/schedule": "^5.0.0",
     "@nestjs/swagger": "^11.0.0",
     "@nestjs/throttler": "^6.5.0",
+    "@nestjs/websockets": "^11.1.17",
     "axios": "^1.7.0",
     "bcrypt": "^5.1.0",
     "bullmq": "^5.30.0",
@@ -45,11 +48,13 @@
     "ioredis": "^5.4.0",
     "mongoose": "^8.9.0",
     "nodemailer": "^8.0.3",
+    "openai": "^6.32.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.0",
     "pdfkit": "^0.15.0",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.0"
+    "rxjs": "^7.8.0",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",

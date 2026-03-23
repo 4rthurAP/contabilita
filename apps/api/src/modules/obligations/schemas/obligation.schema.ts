@@ -48,6 +48,25 @@ export class Obligation {
   @Prop()
   observacoes: string;
 
+  /** Log de transmissoes (tentativas, erros, recibos) */
+  @Prop({
+    type: [{
+      date: { type: Date, required: true },
+      action: { type: String, required: true },
+      status: { type: String, required: true },
+      recibo: { type: String },
+      details: { type: String },
+    }],
+    default: [],
+  })
+  transmissionLog: Array<{
+    date: Date;
+    action: string;
+    status: string;
+    recibo?: string;
+    details?: string;
+  }>;
+
   createdBy?: MongooseSchema.Types.ObjectId;
   updatedBy?: MongooseSchema.Types.ObjectId;
 }

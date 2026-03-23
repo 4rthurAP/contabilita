@@ -1,10 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Model } from 'mongoose';
+import { Queue } from 'bullmq';
 import { Obligation, ObligationDocument } from './schemas/obligation.schema';
 import { SpedEcdGenerator } from './generators/sped-ecd.generator';
 import { SpedEfdGenerator } from './generators/sped-efd.generator';
+import { SpedReinfGenerator } from './generators/sped-reinf.generator';
 import { requireCurrentTenant } from '../tenant/tenant.context';
+import { QUEUE_NAMES } from '../queue/queue.constants';
+import type { SpedTransmissionJobData } from './processors/sped-transmission.processor';
 
 /** Prazos padrao por obrigacao (dia do mes seguinte ao periodo) */
 const PRAZOS: Record<string, number> = {
@@ -22,10 +27,14 @@ const PRAZOS: Record<string, number> = {
 
 @Injectable()
 export class ObligationsService {
+  private readonly logger = new Logger(ObligationsService.name);
+
   constructor(
     @InjectModel(Obligation.name) private obligationModel: Model<ObligationDocument>,
     private ecdGenerator: SpedEcdGenerator,
     private efdGenerator: SpedEfdGenerator,
+    private reinfGenerator: SpedReinfGenerator,
+    @InjectQueue(QUEUE_NAMES.SPED_TRANSMISSION) private spedQueue: Queue<SpedTransmissionJobData>,
   ) {}
 
   async findAll(companyId: string, year?: number) {
@@ -134,6 +143,28 @@ export class ObligationsService {
     return { fileName, lines: content.split('\r\n').length, size: content.length };
   }
 
+  /** Gera eventos EFD-Reinf */
+  async generateReinf(companyId: string, year: number, month: number) {
+    const ctx = requireCurrentTenant();
+    const { events, summary } = await this.reinfGenerator.generate(
+      ctx.tenantId,
+      companyId,
+      year,
+      month,
+    );
+    const competencia = `${String(month).padStart(2, '0')}/${year}`;
+    const fileName = `REINF_${competencia.replace('/', '_')}.xml`;
+    const content = events.join('\n\n');
+
+    await this.obligationModel.findOneAndUpdate(
+      { tenantId: ctx.tenantId, companyId, tipo: 'EFD_REINF', competencia },
+      { status: 'gerada', fileName, fileContent: content, updatedBy: ctx.userId },
+      { upsert: true, new: true },
+    );
+
+    return { fileName, eventsCount: events.length, summary };
+  }
+
   /** Download do arquivo gerado */
   async downloadFile(companyId: string, id: string) {
     const ctx = requireCurrentTenant();
@@ -142,6 +173,26 @@ export class ObligationsService {
     if (!obl.fileContent) throw new BadRequestException('Arquivo ainda nao foi gerado');
 
     return { fileName: obl.fileName, content: obl.fileContent };
+  }
+
+  /** Enfileira transmissao SPED via certificado A1 */
+  async enqueueTransmission(companyId: string, id: string) {
+    const ctx = requireCurrentTenant();
+    const obl = await this.obligationModel.findOne({ _id: id, tenantId: ctx.tenantId, companyId });
+    if (!obl) throw new NotFoundException('Obrigacao nao encontrada');
+    if (!obl.fileContent) throw new BadRequestException('Arquivo ainda nao foi gerado');
+    if (obl.status === 'transmitida') throw new BadRequestException('Obrigacao ja transmitida');
+
+    const job = await this.spedQueue.add('transmit-sped', {
+      tenantContext: { tenantId: ctx.tenantId, userId: ctx.userId, role: ctx.role },
+      companyId,
+      obligationId: id,
+      tipo: obl.tipo,
+    });
+
+    this.logger.log(`Transmissao SPED enfileirada: ${obl.tipo} ${obl.competencia}, job ${job.id}`);
+
+    return { jobId: job.id, message: 'Transmissao enfileirada com sucesso' };
   }
 
   /** Marca como transmitida */

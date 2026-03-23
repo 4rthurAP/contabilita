@@ -1,16 +1,38 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import Decimal from 'decimal.js';
 import { FixedAsset, FixedAssetDocument } from './schemas/fixed-asset.schema';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { requireCurrentTenant } from '../tenant/tenant.context';
 import { StatusBem, MetodoDepreciacao } from '@contabilita/shared';
 
+export interface AssetDepreciatedEvent {
+  tenantId: string;
+  companyId: string;
+  period: string;
+  results: Array<{
+    assetId: string;
+    codigo: string;
+    descricao: string;
+    depreciacaoMensal: string;
+    depreciacaoAcumulada: string;
+    valorAtual: string;
+    ciap: boolean;
+    ciapCreditoMensal?: string;
+  }>;
+  totalDepreciacao: string;
+  totalCiapCredito: string;
+}
+
 @Injectable()
 export class AssetsService {
+  private readonly logger = new Logger(AssetsService.name);
+
   constructor(
     @InjectModel(FixedAsset.name) private assetModel: Model<FixedAssetDocument>,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async create(companyId: string, dto: CreateAssetDto) {
@@ -105,15 +127,52 @@ export class AssetsService {
         descricao: `Depreciacao ${String(month).padStart(2, '0')}/${year}`,
       } as any);
 
+      // CIAP: apropriar credito mensal de ICMS/PIS/COFINS (1/48 por mes)
+      let ciapCreditoMensal: Decimal | undefined;
+      if (asset.ciap && asset.ciapParcelasApropriadas < asset.ciapTotalParcelas) {
+        ciapCreditoMensal = valorAquisicao
+          .times(new Decimal('0.12')) // Aliquota ICMS padrao para credito CIAP
+          .dividedBy(asset.ciapTotalParcelas)
+          .toDecimalPlaces(2);
+        asset.ciapParcelasApropriadas += 1;
+      }
+
       await asset.save();
       results.push({
-        assetId: asset._id,
+        assetId: asset._id.toString(),
         codigo: asset.codigo,
         descricao: asset.descricao,
         depreciacaoMensal: deprecMensal.toString(),
         depreciacaoAcumulada: novaDeprecAcum.toString(),
         valorAtual: novoValorAtual.toString(),
+        ciap: asset.ciap || false,
+        ciapCreditoMensal: ciapCreditoMensal?.toString(),
       });
+    }
+
+    // Emitir evento para geracao automatica de lancamentos contabeis
+    if (results.length > 0) {
+      const totalDepreciacao = results.reduce(
+        (sum, r) => sum.plus(new Decimal(r.depreciacaoMensal)),
+        new Decimal(0),
+      );
+      const totalCiapCredito = results.reduce(
+        (sum, r) => sum.plus(new Decimal(r.ciapCreditoMensal || '0')),
+        new Decimal(0),
+      );
+
+      this.eventEmitter.emit('asset.depreciated', {
+        tenantId: ctx.tenantId,
+        companyId,
+        period: `${String(month).padStart(2, '0')}/${year}`,
+        results,
+        totalDepreciacao: totalDepreciacao.toString(),
+        totalCiapCredito: totalCiapCredito.toString(),
+      } as AssetDepreciatedEvent);
+
+      this.logger.log(
+        `Depreciacao ${month}/${year}: ${results.length} bens, total R$ ${totalDepreciacao.toFixed(2)}`,
+      );
     }
 
     return { period: `${month}/${year}`, assetsDepreciated: results.length, results };

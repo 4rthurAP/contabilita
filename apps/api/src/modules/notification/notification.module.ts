@@ -9,9 +9,11 @@ import { Obligation, ObligationSchema } from '../obligations/schemas/obligation.
 import { TaxPayment, TaxPaymentSchema } from '../fiscal/schemas/tax-payment.schema';
 import { NotificationService } from './notification.service';
 import { NotificationController } from './notification.controller';
+import { NotificationGateway } from './notification.gateway';
 import { NotificationEmailProcessor } from './processors/notification-email.processor';
 import { TenantModule } from '../tenant/tenant.module';
 import { QueueModule } from '../queue/queue.module';
+import { AuthModule } from '../auth/auth.module';
 import mailConfig from '../../config/mail.config';
 
 @Module({
@@ -46,9 +48,10 @@ import mailConfig from '../../config/mail.config';
     }),
     TenantModule,
     QueueModule,
+    AuthModule,
   ],
   controllers: [NotificationController],
-  providers: [NotificationService, NotificationEmailProcessor],
-  exports: [NotificationService],
+  providers: [NotificationService, NotificationGateway, NotificationEmailProcessor],
+  exports: [NotificationService, NotificationGateway],
 })
 export class NotificationModule {}
