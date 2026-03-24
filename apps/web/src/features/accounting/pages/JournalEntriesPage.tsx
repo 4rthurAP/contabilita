@@ -4,7 +4,7 @@ import { Plus, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { DateRangeFilter } from '@/components/molecules/date-range-filter';
 import { Pagination } from '@/components/molecules/pagination';
@@ -72,6 +72,7 @@ function JournalEntriesContent({ companyId }: { companyId: string }) {
       <PageHeader
         title="Lancamentos Contabeis"
         description="Registro de lancamentos com partida dobrada"
+        breadcrumbs={[{ label: 'Contabilidade', href: '/app/accounting' }, { label: 'Lancamentos' }]}
         actions={
           <Link to={`/accounting/journal-entries/new?companyId=${companyId}`}>
             <Button>
@@ -90,9 +91,9 @@ function JournalEntriesContent({ companyId }: { companyId: string }) {
       />
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : data?.data?.length === 0 ? (
-        <EmptyState icon={FileText} title="Nenhum lancamento no periodo" />
+        <EmptyState icon={FileText} title="Nenhum lancamento no periodo" hint="Ajuste o filtro de datas ou crie um novo lancamento" />
       ) : (
         <div className="space-y-3">
           <DataTable

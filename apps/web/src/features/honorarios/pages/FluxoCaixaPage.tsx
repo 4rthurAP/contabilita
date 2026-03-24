@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { DataTable, type Column } from '@/components/organisms/data-table';
 import { ListItemCard } from '@/components/organisms/list-item-card';
@@ -66,6 +66,7 @@ function FluxoCaixaContent({ companyId }: { companyId: string }) {
       <PageHeader
         title="Fluxo de Caixa - Honorarios"
         description="Acompanhamento de receita orcada vs realizada"
+        breadcrumbs={[{ label: 'Honorarios', href: '/app/honorarios/contratos' }, { label: 'Fluxo de Caixa' }]}
         actions={
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setYear(year - 1)}>
@@ -80,7 +81,7 @@ function FluxoCaixaContent({ companyId }: { companyId: string }) {
       />
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !cashFlow || cashFlow.length === 0 ? (
         <EmptyState icon={TrendingUp} title="Sem dados de fluxo de caixa" description="Os dados serao preenchidos conforme cobrancas forem geradas" />
       ) : (

@@ -53,8 +53,8 @@ export function LoginPage() {
               </p>
             )}
 
-            <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? 'Entrando...' : 'Entrar'}
+            <Button type="submit" className="w-full" loading={isPending}>
+              Entrar
             </Button>
 
             <div className="flex items-center gap-3">

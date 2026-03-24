@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { DataTable, type Column } from '@/components/organisms/data-table';
 import { ListItemCard } from '@/components/organisms/list-item-card';
@@ -103,11 +103,11 @@ function BuscaNfeContent({ companyId }: { companyId: string }) {
             <Button
               size="lg"
               onClick={() => fetchNfe.mutate()}
-              disabled={fetchNfe.isPending}
+              loading={fetchNfe.isPending}
               className="min-w-[260px]"
             >
               <Search className="mr-2 h-5 w-5" />
-              {fetchNfe.isPending ? 'Buscando...' : 'Buscar NF-e na Receita'}
+              Buscar NF-e na Receita
             </Button>
 
             <div className="flex items-start gap-2 text-sm text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded-md p-3 max-w-lg">
@@ -123,7 +123,7 @@ function BuscaNfeContent({ companyId }: { companyId: string }) {
 
       {/* Historico de buscas */}
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !history || history.length === 0 ? (
         <EmptyState
           icon={Search}

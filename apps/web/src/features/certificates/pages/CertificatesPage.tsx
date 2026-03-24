@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { PageHeader } from '@/components/molecules/page-header';
 import { EmptyState } from '@/components/molecules/empty-state';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { FormField } from '@/components/molecules/form-field';
 import { DateBR } from '@/components/atoms/DateBR';
@@ -105,7 +105,7 @@ function CertificatesContent({ companyId }: { companyId: string }) {
     },
   ];
 
-  if (isLoading) return <LoadingState />;
+  if (isLoading) return <SkeletonTable rows={5} columns={4} />;
 
   return (
     <div className="space-y-4">
@@ -149,10 +149,11 @@ function CertificatesContent({ companyId }: { companyId: string }) {
                 </FormField>
                 <Button
                   onClick={handleUpload}
-                  disabled={!file || !password || uploadMutation.isPending}
+                  disabled={!file || !password}
+                  loading={uploadMutation.isPending}
                   className="w-full"
                 >
-                  {uploadMutation.isPending ? 'Enviando...' : 'Enviar Certificado'}
+                  Enviar Certificado
                 </Button>
                 {uploadMutation.isError && (
                   <p className="text-sm text-destructive">

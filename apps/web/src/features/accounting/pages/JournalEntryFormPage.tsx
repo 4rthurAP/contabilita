@@ -66,7 +66,7 @@ function EntryFormContent({ companyId }: { companyId: string }) {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <PageHeader title="Novo Lancamento Contabil" description="Lancamento com partida dobrada" />
+      <PageHeader title="Novo Lancamento Contabil" description="Lancamento com partida dobrada" breadcrumbs={[{ label: 'Lancamentos', href: '/app/accounting/journal-entries' }, { label: 'Novo Lancamento' }]} />
 
       <Card>
         <CardHeader>
@@ -78,7 +78,7 @@ function EntryFormContent({ companyId }: { companyId: string }) {
               <FormField label="Data" error={errors.date?.message}>
                 <Input type="date" {...register('date')} />
               </FormField>
-              <FormField label="Tipo">
+              <FormField label="Tipo" helpText="Manual (digitado), Automatico (gerado pelo sistema), Importado (via arquivo) ou Estorno (reversao)">
                 <Select {...register('tipo')}>
                   <option value={TipoLancamento.Manual}>Manual</option>
                   <option value={TipoLancamento.Automatico}>Automatico</option>
@@ -108,8 +108,8 @@ function EntryFormContent({ companyId }: { companyId: string }) {
             )}
 
             <div className="flex gap-3">
-              <Button type="submit" disabled={createEntry.isPending || !isBalanced}>
-                {createEntry.isPending ? 'Salvando...' : 'Lancar'}
+              <Button type="submit" disabled={!isBalanced} loading={createEntry.isPending}>
+                Lancar
               </Button>
               <Button type="button" variant="outline" onClick={() => navigate(-1)}>
                 Cancelar

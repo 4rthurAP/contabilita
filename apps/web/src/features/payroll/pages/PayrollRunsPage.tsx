@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { PAYROLL_STATUS_MAP } from '@/lib/constants';
 import { PayslipDetail } from '../components/payslip-detail';
@@ -55,6 +55,7 @@ function PayrollRunsContent({ companyId }: { companyId: string }) {
       <PageHeader
         title="Folha de Pagamento"
         description="Execucao de folha mensal, ferias, 13o e rescisao"
+        breadcrumbs={[{ label: 'Folha', href: '/app/payroll/runs' }, { label: 'Folhas de Pagamento' }]}
         actions={
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
             <Input type="number" value={newYear} onChange={(e) => setNewYear(+e.target.value)} className="w-20" />
@@ -78,7 +79,7 @@ function PayrollRunsContent({ companyId }: { companyId: string }) {
       />
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !runs || runs.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">

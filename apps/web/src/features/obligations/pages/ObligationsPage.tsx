@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { StatCard } from '@/components/molecules/stat-card';
@@ -55,21 +55,22 @@ function ObligationsContent({ companyId }: { companyId: string }) {
         <Button variant="outline" size="sm" onClick={() => genAnnual.mutate(year)} disabled={genAnnual.isPending}>
           Gerar Anuais
         </Button>
-        <Button size="sm" onClick={() => genEcd.mutate(year)} disabled={genEcd.isPending}>
-          {genEcd.isPending ? 'Gerando...' : 'Gerar SPED ECD'}
+        <Button size="sm" onClick={() => genEcd.mutate(year)} loading={genEcd.isPending}>
+          Gerar SPED ECD
         </Button>
-        <Button size="sm" onClick={() => genEfd.mutate({ year, month })} disabled={genEfd.isPending}>
-          {genEfd.isPending ? 'Gerando...' : 'Gerar SPED EFD'}
+        <Button size="sm" onClick={() => genEfd.mutate({ year, month })} loading={genEfd.isPending}>
+          Gerar SPED EFD
         </Button>
       </FilterBar>
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !obligations || obligations.length === 0 ? (
         <EmptyState
           icon={Send}
           title="Nenhuma obrigacao cadastrada"
-          description="Gere as obrigacoes mensais ou anuais"
+          description="Gere as obrigacoes mensais ou anuais para esta empresa"
+          hint="Use os botoes acima para gerar SPED, ECD ou EFD"
         />
       ) : (
         <div className="space-y-2">

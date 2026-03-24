@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { SegmentedFilter } from '@/components/molecules/segmented-filter';
 import { DataTable, type Column } from '@/components/organisms/data-table';
@@ -69,12 +69,12 @@ function TaxPaymentsContent({ companyId }: { companyId: string }) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Guias de Pagamento" description="DARF, DAS, ISS e outras guias" />
+      <PageHeader title="Guias de Pagamento" description="DARF, DAS, ISS e outras guias" breadcrumbs={[{ label: 'Escrita Fiscal', href: '/app/fiscal/invoices' }, { label: 'Guias' }]} />
 
       <SegmentedFilter options={PAYMENT_STATUS_OPTIONS} value={statusFilter} onChange={setStatusFilter} />
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !payments || payments.length === 0 ? (
         <Card>
           <div className="py-12 text-center text-muted-foreground">

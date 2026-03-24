@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { PageHeader } from '@/components/molecules/page-header';
+import { HelpTooltip } from '@/components/molecules/help-tooltip';
+import { GLOSSARY } from '@/lib/accounting-glossary';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { DataTable, type Column } from '@/components/organisms/data-table';
 import { FilterBar } from '@/components/organisms/filter-bar';
@@ -52,8 +54,8 @@ function LalurContent({ companyId }: { companyId: string }) {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="LALUR - Livro de Apuracao do Lucro Real"
-        description="Parte A (adicoes e exclusoes) e Parte B (controle de saldos)"
+        title={<span className="inline-flex items-center gap-2">LALUR - Livro de Apuracao do Lucro Real <HelpTooltip help={GLOSSARY.lalur} /></span>}
+        description="Parte A (adicoes e exclusoes) e Parte B (controle de saldos). Obrigatorio para empresas no Lucro Real."
       />
 
       <div className="flex gap-2">
@@ -103,7 +105,7 @@ function LalurContent({ companyId }: { companyId: string }) {
 
       {tab === 'parte-a' ? (
         loadingEntries ? (
-          <LoadingState />
+          <SkeletonTable rows={5} columns={4} />
         ) : !entries || entries.length === 0 ? (
           <EmptyState
             icon={BookOpen}
@@ -118,7 +120,7 @@ function LalurContent({ companyId }: { companyId: string }) {
           />
         )
       ) : loadingBalances ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !balances || balances.length === 0 ? (
         <EmptyState
           icon={BookOpen}

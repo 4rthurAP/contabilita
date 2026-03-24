@@ -9,6 +9,8 @@ import {
   Legend,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { BarChart3 } from 'lucide-react';
 
 interface DreTrendData {
   month: string;
@@ -52,12 +54,12 @@ export function DreTrendChart({ data, isLoading }: DreTrendChartProps) {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            Carregando...
-          </div>
+          <Skeleton className="h-[300px] w-full rounded-md" />
         ) : chartData.length === 0 ? (
-          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            Sem dados no periodo
+          <div className="h-[300px] flex flex-col items-center justify-center text-center">
+            <BarChart3 className="h-10 w-10 text-muted-foreground/40 mb-3" />
+            <p className="text-sm font-medium">Sem dados no periodo</p>
+            <p className="text-xs text-muted-foreground mt-1">Registre lancamentos contabeis para visualizar tendencias</p>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>

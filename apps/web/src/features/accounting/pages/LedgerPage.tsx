@@ -5,7 +5,7 @@ import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { DateRangeFilter } from '@/components/molecules/date-range-filter';
 import { FilterBar } from '@/components/organisms/filter-bar';
 import { DataTable, type Column } from '@/components/organisms/data-table';
@@ -39,7 +39,7 @@ function LedgerContent({ companyId }: { companyId: string }) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Razao (Ledger)" description="Movimentacoes de uma conta no periodo" />
+      <PageHeader title="Razao (Ledger)" description="Movimentacoes de uma conta no periodo" breadcrumbs={[{ label: 'Contabilidade', href: '/app/accounting' }, { label: 'Razao Contabil' }]} />
 
       <FilterBar>
         <div className="space-y-1 flex-1 max-w-sm">
@@ -75,7 +75,7 @@ function LedgerContent({ companyId }: { companyId: string }) {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <LoadingState />
+              <SkeletonTable rows={5} columns={4} />
             ) : ledger?.movements?.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 Nenhuma movimentacao no periodo

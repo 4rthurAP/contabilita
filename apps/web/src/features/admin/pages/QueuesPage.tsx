@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/molecules/page-header';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { StatCard } from '@/components/molecules/stat-card';
 import { DataTable, type Column } from '@/components/organisms/data-table';
@@ -18,7 +18,7 @@ export function QueuesPage() {
   const retryMutation = useRetryJob();
   const cleanMutation = useCleanQueue();
 
-  if (isLoading) return <LoadingState />;
+  if (isLoading) return <SkeletonTable rows={5} columns={4} />;
 
   const totals = (queues || []).reduce(
     (acc, q) => ({

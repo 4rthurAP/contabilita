@@ -3,7 +3,7 @@ import { ListTodo, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/molecules/page-header';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { SegmentedFilter } from '@/components/molecules/segmented-filter';
@@ -128,7 +128,7 @@ export function TarefasPage() {
       </div>
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !tarefas || tarefas.length === 0 ? (
         <EmptyState
           icon={ListTodo}

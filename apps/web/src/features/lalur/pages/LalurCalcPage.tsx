@@ -32,6 +32,7 @@ function LalurCalcContent({ companyId }: { companyId: string }) {
       <PageHeader
         title="Calculo do Lucro Real"
         description="Apuracao do IRPJ/CSLL com base no LALUR"
+        breadcrumbs={[{ label: 'LALUR', href: '/app/lalur' }, { label: 'Calculo Lucro Real' }]}
       />
 
       <Card>

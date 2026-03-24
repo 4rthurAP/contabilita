@@ -2,7 +2,7 @@ import { Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { DataTable, type Column } from '@/components/organisms/data-table';
@@ -60,17 +60,17 @@ function AssetsContent({ companyId }: { companyId: string }) {
         actions={
           <Button
             onClick={() => depreciate.mutate({ year: now.getFullYear(), month: now.getMonth() + 1 })}
-            disabled={depreciate.isPending}
+            loading={depreciate.isPending}
           >
-            {depreciate.isPending ? 'Depreciando...' : 'Depreciar Mes Atual'}
+            Depreciar Mes Atual
           </Button>
         }
       />
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !assets || assets.length === 0 ? (
-        <EmptyState icon={Package} title="Nenhum bem cadastrado" />
+        <EmptyState icon={Package} title="Nenhum bem cadastrado" hint="Cadastre bens para controlar depreciacao automaticamente" />
       ) : (
         <DataTable
           columns={columns}

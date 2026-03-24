@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { SegmentedFilter } from '@/components/molecules/segmented-filter';
@@ -111,7 +111,7 @@ function RegistroContent({ companyId }: { companyId: string }) {
       />
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !registros || registros.length === 0 ? (
         <EmptyState
           icon={ClipboardList}

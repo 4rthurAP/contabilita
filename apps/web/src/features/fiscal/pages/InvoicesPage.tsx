@@ -3,7 +3,7 @@ import { FileText, Upload, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { Pagination } from '@/components/molecules/pagination';
 import { StatusBadge } from '@/components/molecules/status-badge';
@@ -94,10 +94,11 @@ function InvoicesContent({ companyId }: { companyId: string }) {
       <PageHeader
         title="Notas Fiscais"
         description="Escrituracao de notas fiscais de entrada e saida"
+        breadcrumbs={[{ label: 'Escrita Fiscal', href: '/app/fiscal/invoices' }, { label: 'Notas Fiscais' }]}
         actions={
-          <Button variant="outline" onClick={handleImportXml} disabled={importXml.isPending}>
+          <Button variant="outline" onClick={handleImportXml} loading={importXml.isPending}>
             <Upload className="mr-2 h-4 w-4" />
-            {importXml.isPending ? 'Importando...' : 'Importar XML'}
+            Importar XML
           </Button>
         }
       />
@@ -105,12 +106,13 @@ function InvoicesContent({ companyId }: { companyId: string }) {
       <SegmentedFilter options={INVOICE_TIPO_OPTIONS} value={tipo} onChange={setTipo} />
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : data?.data?.length === 0 ? (
         <EmptyState
           icon={FileText}
           title="Nenhuma nota fiscal"
           description="Importe um XML de NF-e para comecar"
+          hint="Importe XMLs de NF-e ou cadastre manualmente"
         />
       ) : (
         <div className="space-y-3">

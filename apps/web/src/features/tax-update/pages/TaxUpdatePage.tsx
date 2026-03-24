@@ -2,7 +2,7 @@ import { Clock, AlertTriangle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { ListItemCard } from '@/components/organisms/list-item-card';
 import { useOverdueTaxes } from '../hooks/useTaxUpdate';
@@ -33,7 +33,7 @@ function TaxUpdateContent({ companyId }: { companyId: string }) {
       )}
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !overdue || overdue.length === 0 ? (
         <EmptyState icon={Clock} title="Nenhum imposto em atraso" />
       ) : (

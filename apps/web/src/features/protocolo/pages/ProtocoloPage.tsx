@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ClipboardList } from 'lucide-react';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { SegmentedFilter } from '@/components/molecules/segmented-filter';
@@ -54,7 +54,7 @@ function ProtocoloContent({ companyId }: { companyId: string }) {
       <SegmentedFilter options={PROTOCOLO_STATUS_OPTIONS} value={status} onChange={setStatus} />
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !protocolos || protocolos.length === 0 ? (
         <EmptyState icon={ClipboardList} title="Nenhum protocolo encontrado" description="Cadastre um protocolo para comecar o controle" />
       ) : (

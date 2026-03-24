@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/molecules/page-header';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
+import { ConfirmDialog } from '@/components/molecules/confirm-dialog';
 import { Pagination } from '@/components/molecules/pagination';
 import { DataTable, type Column } from '@/components/organisms/data-table';
 import { ListItemCard } from '@/components/organisms/list-item-card';
@@ -17,6 +18,7 @@ import { formatCnpj } from '@/utils/formatters';
 export function CompaniesPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const { data, isLoading } = useCompanies(page, search || undefined);
   const deleteCompany = useDeleteCompany();
 
@@ -31,7 +33,7 @@ export function CompaniesPage() {
           <Link to={`/companies/${c._id}/edit`}>
             <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
           </Link>
-          <Button variant="ghost" size="icon" onClick={() => { if (confirm('Tem certeza que deseja remover esta empresa?')) deleteCompany.mutate(c._id); }}>
+          <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(c._id)}>
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
         </div>
@@ -54,7 +56,7 @@ export function CompaniesPage() {
           <Link to={`/companies/${company._id}/edit`}>
             <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
           </Link>
-          <Button variant="ghost" size="icon" onClick={() => { if (confirm('Tem certeza que deseja remover esta empresa?')) deleteCompany.mutate(company._id); }}>
+          <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(company._id)}>
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
         </div>
@@ -93,12 +95,13 @@ export function CompaniesPage() {
       </div>
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={3} />
       ) : data?.data.length === 0 ? (
         <EmptyState
           icon={Building2}
           title="Nenhuma empresa cadastrada"
           description="Comece cadastrando a primeira empresa"
+          hint="Tenha o cartao CNPJ em maos para agilizar"
           action={
             <Link to="/companies/new">
               <Button>
@@ -119,6 +122,21 @@ export function CompaniesPage() {
           <Pagination page={page} totalPages={data?.totalPages || 1} onPageChange={setPage} />
         </>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (deleteTarget) {
+            deleteCompany.mutate(deleteTarget, { onSettled: () => setDeleteTarget(null) });
+          }
+        }}
+        variant="destructive"
+        title="Remover empresa"
+        description="Esta acao e irreversivel. Todos os dados contabeis vinculados serao perdidos."
+        confirmLabel="Remover"
+        loading={deleteCompany.isPending}
+      />
     </div>
   );
 }

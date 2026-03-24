@@ -1,7 +1,7 @@
 import { Users } from 'lucide-react';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { DataTable, type Column } from '@/components/organisms/data-table';
@@ -51,12 +51,12 @@ function EmployeesContent({ companyId }: { companyId: string }) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Funcionarios" description="Cadastro de funcionarios da empresa" />
+      <PageHeader title="Funcionarios" description="Cadastro de funcionarios da empresa" breadcrumbs={[{ label: 'Folha', href: '/app/payroll/runs' }, { label: 'Funcionarios' }]} />
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !employees || employees.length === 0 ? (
-        <EmptyState icon={Users} title="Nenhum funcionario cadastrado" />
+        <EmptyState icon={Users} title="Nenhum funcionario cadastrado" hint="Cadastre funcionarios para gerar folhas de pagamento" />
       ) : (
         <DataTable
           columns={columns}

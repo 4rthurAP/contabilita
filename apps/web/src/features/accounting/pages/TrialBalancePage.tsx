@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/molecules/page-header';
+import { HelpTooltip } from '@/components/molecules/help-tooltip';
+import { GLOSSARY } from '@/lib/accounting-glossary';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { DateRangeFilter } from '@/components/molecules/date-range-filter';
 import { FilterBar } from '@/components/organisms/filter-bar';
 import { DataTable, type Column } from '@/components/organisms/data-table';
@@ -39,7 +41,7 @@ function TrialBalanceContent({ companyId }: { companyId: string }) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Balancete de Verificacao" description="Saldos de todas as contas no periodo" />
+      <PageHeader title={<span className="inline-flex items-center gap-2">Balancete de Verificacao <HelpTooltip help={GLOSSARY.balancete} /></span>} description="Lista todas as contas com seus saldos devedores e credores no periodo, verificando o equilibrio da escrituracao" breadcrumbs={[{ label: 'Contabilidade', href: '/app/accounting' }, { label: 'Balancete' }]} />
 
       <FilterBar>
         <DateRangeFilter
@@ -62,7 +64,7 @@ function TrialBalanceContent({ companyId }: { companyId: string }) {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <LoadingState />
+            <SkeletonTable rows={5} columns={4} />
           ) : data?.accounts?.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               Nenhum lancamento no periodo

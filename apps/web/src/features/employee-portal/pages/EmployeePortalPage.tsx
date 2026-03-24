@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { User, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/molecules/page-header';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { DataTable, type Column } from '@/components/organisms/data-table';
@@ -17,7 +17,7 @@ const MONTH_NAMES = ['', 'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junh
 function PayslipDetailModal({ id, onClose }: { id: string; onClose: () => void }) {
   const { data: payslip, isLoading } = usePayslipDetail(id);
 
-  if (isLoading) return <LoadingState />;
+  if (isLoading) return <SkeletonTable rows={5} columns={4} />;
   if (!payslip) return null;
 
   const proventos = payslip.lines?.filter((l: any) => l.tipo === 'provento') || [];
@@ -76,7 +76,7 @@ export function EmployeePortalPage() {
     return (
       <div className="space-y-6">
         <PageHeader title="Portal do Funcionario" description="Seus dados e holerites" />
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       </div>
     );
   }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { BarChart3 } from 'lucide-react';
 import { PageHeader } from '@/components/molecules/page-header';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { YearMonthFilter } from '@/components/molecules/year-month-filter';
 import { FilterBar } from '@/components/organisms/filter-bar';
@@ -87,7 +87,7 @@ export function ProdutividadePage() {
       </FilterBar>
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !productivity || productivity.length === 0 ? (
         <EmptyState
           icon={BarChart3}

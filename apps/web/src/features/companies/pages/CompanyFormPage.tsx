@@ -12,6 +12,7 @@ import { FormField } from '@/components/molecules/form-field';
 import { useCreateCompany, useUpdateCompany, useCompany } from '../hooks/useCompanies';
 import { RegimeTributario } from '@contabilita/shared';
 import { REGIME_OPTIONS } from '@/lib/constants';
+import { GLOSSARY } from '@/lib/accounting-glossary';
 
 const companySchema = z.object({
   cnpj: z.string().regex(/^\d{14}$/, 'CNPJ deve conter 14 digitos'),
@@ -90,6 +91,7 @@ export function CompanyFormPage() {
       <PageHeader
         title={isEditing ? 'Editar Empresa' : 'Nova Empresa'}
         description={isEditing ? 'Atualize os dados da empresa' : 'Cadastre uma nova empresa no escritorio'}
+        breadcrumbs={[{ label: 'Empresas', href: '/app/companies' }, { label: isEditing ? 'Editar' : 'Nova Empresa' }]}
       />
 
       <Card>
@@ -102,7 +104,7 @@ export function CompanyFormPage() {
               <FormField label="CNPJ" error={errors.cnpj?.message}>
                 <Input placeholder="12345678000199" maxLength={14} disabled={isEditing} {...register('cnpj')} />
               </FormField>
-              <FormField label="Regime Tributario">
+              <FormField label="Regime Tributario" helpText={GLOSSARY.regimeTributario}>
                 <Select {...register('regimeTributario')}>
                   {REGIME_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -115,15 +117,15 @@ export function CompanyFormPage() {
               <Input placeholder="Empresa Exemplo Ltda" {...register('razaoSocial')} />
             </FormField>
 
-            <FormField label="Nome Fantasia">
+            <FormField label="Nome Fantasia" optional>
               <Input placeholder="Exemplo" {...register('nomeFantasia')} />
             </FormField>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField label="Inscricao Estadual">
+              <FormField label="Inscricao Estadual" optional>
                 <Input {...register('inscricaoEstadual')} />
               </FormField>
-              <FormField label="Inscricao Municipal">
+              <FormField label="Inscricao Municipal" optional>
                 <Input {...register('inscricaoMunicipal')} />
               </FormField>
             </div>
@@ -131,7 +133,7 @@ export function CompanyFormPage() {
             <h3 className="text-sm font-semibold pt-4 border-t">Endereco</h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <FormField label="CEP">
+              <FormField label="CEP" optional>
                 <Input placeholder="01001000" maxLength={8} {...register('endereco.cep')} />
               </FormField>
               <FormField label="Logradouro" className="sm:col-span-2">
@@ -143,7 +145,7 @@ export function CompanyFormPage() {
               <FormField label="Numero">
                 <Input {...register('endereco.numero')} />
               </FormField>
-              <FormField label="Complemento">
+              <FormField label="Complemento" optional>
                 <Input {...register('endereco.complemento')} />
               </FormField>
               <FormField label="Bairro">
@@ -158,7 +160,7 @@ export function CompanyFormPage() {
               <FormField label="Cidade">
                 <Input {...register('endereco.cidade')} />
               </FormField>
-              <FormField label="Codigo IBGE">
+              <FormField label="Codigo IBGE" optional helpText={GLOSSARY.codigoIbge}>
                 <Input {...register('endereco.codigoIbge')} />
               </FormField>
             </div>
@@ -170,8 +172,8 @@ export function CompanyFormPage() {
             )}
 
             <div className="flex gap-3 pt-4">
-              <Button type="submit" disabled={isPending}>
-                {isPending ? 'Salvando...' : isEditing ? 'Atualizar' : 'Cadastrar'}
+              <Button type="submit" loading={isPending}>
+                {isEditing ? 'Atualizar' : 'Cadastrar'}
               </Button>
               <Button type="button" variant="outline" onClick={() => navigate('/app/companies')}>
                 Cancelar

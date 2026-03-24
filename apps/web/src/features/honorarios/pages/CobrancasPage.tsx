@@ -3,7 +3,7 @@ import { Receipt, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { SegmentedFilter } from '@/components/molecules/segmented-filter';
@@ -80,9 +80,10 @@ function CobrancasContent({ companyId }: { companyId: string }) {
       <PageHeader
         title="Cobrancas"
         description="Acompanhamento de cobrancas de honorarios"
+        breadcrumbs={[{ label: 'Honorarios', href: '/app/honorarios/contratos' }, { label: 'Cobrancas' }]}
         actions={
-          <Button variant="outline" onClick={handleGenerate} disabled={generateBilling.isPending}>
-            {generateBilling.isPending ? 'Gerando...' : 'Gerar Cobrancas'}
+          <Button variant="outline" onClick={handleGenerate} loading={generateBilling.isPending}>
+            Gerar Cobrancas
           </Button>
         }
       />
@@ -90,9 +91,9 @@ function CobrancasContent({ companyId }: { companyId: string }) {
       <SegmentedFilter options={COBRANCA_STATUS_OPTIONS} value={status} onChange={setStatus} />
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !cobrancas || cobrancas.length === 0 ? (
-        <EmptyState icon={Receipt} title="Nenhuma cobranca encontrada" description="Gere cobrancas a partir dos contratos ativos" />
+        <EmptyState icon={Receipt} title="Nenhuma cobranca encontrada" description="Gere cobrancas a partir dos contratos ativos" hint="Clique em 'Gerar Cobrancas' para criar a partir dos contratos" />
       ) : (
         <DataTable
           columns={columns}

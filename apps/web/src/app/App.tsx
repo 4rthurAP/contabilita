@@ -4,6 +4,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toast';
 import { AbilityProvider } from '@/components/providers/AbilityProvider';
+import { ErrorBoundary } from '@/components/molecules/error-boundary';
 import { AppRoutes } from './routes';
 
 const queryClient = new QueryClient({
@@ -23,9 +24,11 @@ export function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <BrowserRouter>
-            <AbilityProvider>
-              <AppRoutes />
-            </AbilityProvider>
+            <ErrorBoundary>
+              <AbilityProvider>
+                <AppRoutes />
+              </AbilityProvider>
+            </ErrorBoundary>
             <Toaster />
           </BrowserRouter>
         </TooltipProvider>

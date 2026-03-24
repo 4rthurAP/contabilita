@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { FileText } from 'lucide-react';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { SegmentedFilter } from '@/components/molecules/segmented-filter';
@@ -53,14 +53,14 @@ function ContratosContent({ companyId }: { companyId: string }) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Contratos de Honorarios" description="Gestao de contratos de prestacao de servicos contabeis" />
+      <PageHeader title="Contratos de Honorarios" description="Gestao de contratos de prestacao de servicos contabeis" breadcrumbs={[{ label: 'Honorarios', href: '/app/honorarios/contratos' }, { label: 'Contratos' }]} />
 
       <SegmentedFilter options={CONTRATO_STATUS_OPTIONS} value={status} onChange={setStatus} />
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !contratos || contratos.length === 0 ? (
-        <EmptyState icon={FileText} title="Nenhum contrato cadastrado" description="Cadastre um contrato para comecar" />
+        <EmptyState icon={FileText} title="Nenhum contrato cadastrado" description="Cadastre um contrato para comecar" hint="Contratos geram cobrancas automaticas mensalmente" />
       ) : (
         <DataTable
           columns={columns}

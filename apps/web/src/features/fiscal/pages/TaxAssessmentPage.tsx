@@ -3,8 +3,10 @@ import { Calculator, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/molecules/page-header';
+import { HelpTooltip } from '@/components/molecules/help-tooltip';
+import { GLOSSARY } from '@/lib/accounting-glossary';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonCards } from '@/components/molecules/skeleton-cards';
 import { YearMonthFilter } from '@/components/molecules/year-month-filter';
 import { FilterBar } from '@/components/organisms/filter-bar';
 import { IMPOSTO_LABELS } from '@/lib/constants';
@@ -25,17 +27,18 @@ function TaxAssessmentContent({ companyId }: { companyId: string }) {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Apuracao Fiscal"
-        description="Apuracao mensal de impostos"
+        title={<span className="inline-flex items-center gap-2">Apuracao Fiscal <HelpTooltip help={GLOSSARY.apuracaoFiscal} /></span>}
+        description="Calculo mensal dos impostos devidos com base nas notas fiscais de entrada e saida"
+        breadcrumbs={[{ label: 'Escrita Fiscal', href: '/app/fiscal/invoices' }, { label: 'Apuracao' }]}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => recalculate.mutate({ year, month })} disabled={recalculate.isPending}>
+            <Button variant="outline" onClick={() => recalculate.mutate({ year, month })} loading={recalculate.isPending}>
               <Calculator className="mr-2 h-4 w-4" />
-              {recalculate.isPending ? 'Calculando...' : 'Recalcular'}
+              Recalcular
             </Button>
-            <Button onClick={() => generatePayments.mutate({ year, month })} disabled={generatePayments.isPending}>
+            <Button onClick={() => generatePayments.mutate({ year, month })} loading={generatePayments.isPending}>
               <Receipt className="mr-2 h-4 w-4" />
-              {generatePayments.isPending ? 'Gerando...' : 'Gerar Guias'}
+              Gerar Guias
             </Button>
           </div>
         }
@@ -46,7 +49,7 @@ function TaxAssessmentContent({ companyId }: { companyId: string }) {
       </FilterBar>
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonCards count={6} />
       ) : !assessments || assessments.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">

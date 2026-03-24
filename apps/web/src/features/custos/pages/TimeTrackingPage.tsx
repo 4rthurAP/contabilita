@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { DataTable, type Column } from '@/components/organisms/data-table';
 import { ListItemCard } from '@/components/organisms/list-item-card';
@@ -119,7 +119,7 @@ function TimeTrackingContent({ companyId }: { companyId: string }) {
       </Card>
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !entries || entries.length === 0 ? (
         <EmptyState icon={Clock} title="Nenhum apontamento registrado" description="Registre horas trabalhadas usando o formulario acima" />
       ) : (

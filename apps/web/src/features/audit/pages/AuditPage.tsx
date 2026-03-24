@@ -3,7 +3,7 @@ import { Shield } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/molecules/page-header';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { Pagination } from '@/components/molecules/pagination';
 import { StatusBadge } from '@/components/molecules/status-badge';
@@ -64,7 +64,7 @@ export function AuditPage() {
       </FilterBar>
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !data?.data || data.data.length === 0 ? (
         <EmptyState icon={Shield} title="Nenhum registro de auditoria" />
       ) : (

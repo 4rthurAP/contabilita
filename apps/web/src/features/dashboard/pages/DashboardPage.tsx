@@ -4,6 +4,7 @@ import { StatCard } from '@/components/molecules/stat-card';
 import { CompanySelector } from '@/components/molecules/company-selector';
 import { DreTrendChart } from '@/components/organisms/charts/dre-trend-chart';
 import { TaxBurdenChart } from '@/components/organisms/charts/tax-burden-chart';
+import { WelcomeCard } from '../components/WelcomeCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -13,6 +14,7 @@ import {
   useTaxBurden,
 } from '../hooks/useDashboard';
 import { useCompanies } from '@/features/companies/hooks/useCompanies';
+import { useUiStore } from '@/stores/ui.store';
 import {
   Building2,
   FileText,
@@ -47,6 +49,7 @@ const ACTION_LABELS: Record<string, string> = {
 
 export function DashboardPage() {
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>();
+  const { onboardingDismissed, dismissOnboarding } = useUiStore();
   const { data: companiesData } = useCompanies(1);
   const { data: summary, isLoading: loadingSummary } = useDashboardSummary(selectedCompanyId);
   const { data: activity } = useRecentActivity(selectedCompanyId);
@@ -70,60 +73,71 @@ export function DashboardPage() {
         )}
       </div>
 
+      {/* Onboarding */}
+      {!onboardingDismissed && <WelcomeCard onDismiss={dismissOnboarding} />}
+
       {/* KPI Cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Empresas Ativas"
-          value={loadingSummary ? '...' : (summary?.companiesCount ?? 0)}
-          subtitle={companies.length > 0 ? `${companies.length} cadastradas` : 'Cadastre a primeira'}
-          icon={Building2}
-        />
-        <StatCard
-          title="Lancamentos do Mes"
-          value={loadingSummary ? '...' : (summary?.entriesThisMonth ?? 0)}
-          subtitle="Lancamentos contabeis"
-          icon={FileText}
-        />
-        <StatCard
-          title="Funcionarios Ativos"
-          value={loadingSummary ? '...' : (summary?.employeesCount ?? 0)}
-          subtitle="Na folha de pagamento"
-          icon={Users}
-        />
-        <StatCard
-          title="Guias Pendentes"
-          value={loadingSummary ? '...' : formatCurrency(summary?.pendingPaymentsTotal ?? '0')}
-          subtitle={
-            summary?.overduePayments
-              ? `${summary.overduePayments} vencida(s)`
-              : 'Nenhuma vencida'
-          }
-          icon={Landmark}
-          valueClassName={summary?.overduePayments ? 'text-destructive' : undefined}
-        />
+        {[
+          {
+            title: 'Empresas Ativas',
+            value: summary?.companiesCount ?? 0,
+            subtitle: companies.length > 0 ? `${companies.length} cadastradas` : 'Cadastre a primeira',
+            icon: Building2,
+          },
+          {
+            title: 'Lancamentos do Mes',
+            value: summary?.entriesThisMonth ?? 0,
+            subtitle: 'Lancamentos contabeis',
+            icon: FileText,
+          },
+          {
+            title: 'Funcionarios Ativos',
+            value: summary?.employeesCount ?? 0,
+            subtitle: 'Na folha de pagamento',
+            icon: Users,
+          },
+          {
+            title: 'Guias Pendentes',
+            value: formatCurrency(summary?.pendingPaymentsTotal ?? '0'),
+            subtitle: summary?.overduePayments ? `${summary.overduePayments} vencida(s)` : 'Nenhuma vencida',
+            icon: Landmark,
+            valueClassName: summary?.overduePayments ? 'text-destructive' : undefined,
+          },
+        ].map((card, i) => (
+          <div key={card.title} className="motion-safe:animate-fade-in" style={{ animationDelay: `${i * 75}ms`, animationFillMode: 'backwards' }}>
+            <StatCard {...card} isLoading={loadingSummary} />
+          </div>
+        ))}
       </div>
 
       {/* Secondary KPIs */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
-        <StatCard
-          title="Conciliacao Pendente"
-          value={loadingSummary ? '...' : (summary?.pendingReconciliation ?? 0)}
-          subtitle="Transacoes bancarias"
-          icon={ArrowDownUp}
-        />
-        <StatCard
-          title="Obrigacoes Proximas"
-          value={loadingSummary ? '...' : (summary?.upcomingObligations ?? 0)}
-          subtitle="Nos proximos 30 dias"
-          icon={Clock}
-        />
-        <StatCard
-          title="Guias Vencidas"
-          value={loadingSummary ? '...' : (summary?.overduePayments ?? 0)}
-          subtitle="Requerem atencao imediata"
-          icon={AlertTriangle}
-          valueClassName={summary?.overduePayments ? 'text-destructive' : undefined}
-        />
+        {[
+          {
+            title: 'Conciliacao Pendente',
+            value: summary?.pendingReconciliation ?? 0,
+            subtitle: 'Transacoes bancarias',
+            icon: ArrowDownUp,
+          },
+          {
+            title: 'Obrigacoes Proximas',
+            value: summary?.upcomingObligations ?? 0,
+            subtitle: 'Nos proximos 30 dias',
+            icon: Clock,
+          },
+          {
+            title: 'Guias Vencidas',
+            value: summary?.overduePayments ?? 0,
+            subtitle: 'Requerem atencao imediata',
+            icon: AlertTriangle,
+            valueClassName: summary?.overduePayments ? 'text-destructive' : undefined,
+          },
+        ].map((card, i) => (
+          <div key={card.title} className="motion-safe:animate-fade-in" style={{ animationDelay: `${(i + 4) * 75}ms`, animationFillMode: 'backwards' }}>
+            <StatCard {...card} isLoading={loadingSummary} />
+          </div>
+        ))}
       </div>
 
       {/* Charts */}

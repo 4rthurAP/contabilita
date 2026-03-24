@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { useBalancoPatrimonial } from '@/features/reports/hooks/useReports';
 import { BalancoSection } from '../components/balanco-section';
 import dayjs from 'dayjs';
@@ -17,7 +17,7 @@ function BalancoContent({ companyId }: { companyId: string }) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Balanco Patrimonial" />
+      <PageHeader title="Balanco Patrimonial" breadcrumbs={[{ label: 'Contabilidade', href: '/app/accounting' }, { label: 'Balanco Patrimonial' }]} />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
         <div className="space-y-1">
@@ -28,7 +28,7 @@ function BalancoContent({ companyId }: { companyId: string }) {
       </div>
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : data && (
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-4">

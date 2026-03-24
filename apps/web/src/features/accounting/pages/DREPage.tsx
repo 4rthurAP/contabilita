@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { DateRangeFilter } from '@/components/molecules/date-range-filter';
 import { FilterBar } from '@/components/organisms/filter-bar';
 import { useDre } from '@/features/reports/hooks/useReports';
@@ -19,7 +19,7 @@ function DREContent({ companyId }: { companyId: string }) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="DRE - Demonstracao do Resultado" />
+      <PageHeader title="DRE - Demonstracao do Resultado" breadcrumbs={[{ label: 'Contabilidade', href: '/app/accounting' }, { label: 'DRE' }]} />
 
       <FilterBar>
         <DateRangeFilter
@@ -32,7 +32,7 @@ function DREContent({ companyId }: { companyId: string }) {
       </FilterBar>
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : data && (
         <Card className="max-w-2xl">
           <CardHeader>

@@ -63,8 +63,8 @@ export function RegisterPage() {
               </p>
             )}
 
-            <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? 'Registrando...' : 'Criar conta'}
+            <Button type="submit" className="w-full" loading={isPending}>
+              Criar conta
             </Button>
 
             <div className="flex items-center gap-3">

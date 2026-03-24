@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { PageHeader } from '@/components/molecules/page-header';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { EmptyState } from '@/components/molecules/empty-state';
 import { DataTable, type Column } from '@/components/organisms/data-table';
 import { ListItemCard } from '@/components/organisms/list-item-card';
@@ -127,7 +127,7 @@ export function CustosAnalysisPage() {
       </div>
 
       {isLoading ? (
-        <LoadingState />
+        <SkeletonTable rows={5} columns={4} />
       ) : !analysis || analysis.length === 0 ? (
         <EmptyState icon={BarChart3} title="Sem dados de analise" description="Registre apontamentos de horas para ver a analise de custos" />
       ) : (

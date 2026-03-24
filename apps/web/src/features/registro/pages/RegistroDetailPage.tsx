@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { REGISTRO_STATUS_MAP } from '@/lib/constants';
 import {
@@ -48,7 +48,7 @@ function RegistroDetailContent({ companyId }: { companyId: string }) {
     );
   };
 
-  if (isLoading) return <LoadingState />;
+  if (isLoading) return <SkeletonTable rows={5} columns={4} />;
   if (!registro) return null;
 
   return (
@@ -56,6 +56,7 @@ function RegistroDetailContent({ companyId }: { companyId: string }) {
       <PageHeader
         title={`Registro - ${registro.tipo}`}
         description={`Criado em ${dayjs(registro.createdAt).format('DD/MM/YYYY')}`}
+        breadcrumbs={[{ label: 'Registro', href: '/app/registro' }, { label: 'Detalhes' }]}
         actions={
           <Button
             variant="outline"

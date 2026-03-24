@@ -3,8 +3,10 @@ import { Plus, FolderOpen, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/molecules/page-header';
+import { HelpTooltip } from '@/components/molecules/help-tooltip';
+import { GLOSSARY } from '@/lib/accounting-glossary';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { useAccountTree } from '../hooks/useAccounting';
 import { AccountNode } from '../components/account-node';
 
@@ -15,8 +17,8 @@ function ChartContent({ companyId }: { companyId: string }) {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Plano de Contas"
-        description="Estrutura hierarquica de contas contabeis"
+        title={<span className="inline-flex items-center gap-2">Plano de Contas <HelpTooltip help={GLOSSARY.planoDeContas} /></span>}
+        description="Estrutura hierarquica de contas contabeis da empresa, organizada por grupos (Ativo, Passivo, Receita, Despesa)"
         actions={
           <Button onClick={() => navigate(`/accounting/accounts/new?companyId=${companyId}`)}>
             <Plus className="mr-2 h-4 w-4" />
@@ -41,7 +43,7 @@ function ChartContent({ companyId }: { companyId: string }) {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <LoadingState />
+            <SkeletonTable rows={5} columns={4} />
           ) : tree && tree.length > 0 ? (
             <div className="overflow-x-auto">
               <div className="space-y-0.5">

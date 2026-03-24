@@ -1,7 +1,7 @@
 import { CreditCard, AlertTriangle, FileText, Users } from 'lucide-react';
 import { PageHeader } from '@/components/molecules/page-header';
 import { CompanyRequired } from '@/components/molecules/company-required';
-import { LoadingState } from '@/components/molecules/loading-state';
+import { SkeletonTable } from '@/components/molecules/skeleton-table';
 import { StatCard } from '@/components/molecules/stat-card';
 import { StatusBadge } from '@/components/molecules/status-badge';
 import { DataTable, type Column } from '@/components/organisms/data-table';
@@ -31,7 +31,7 @@ function ClientPortalContent({ companyId }: { companyId: string }) {
     { key: 'status', header: 'Status', className: 'w-24', render: (o) => <StatusBadge status={o.status} statusMap={OBLIGATION_STATUS_MAP} /> },
   ];
 
-  if (loadingSummary) return <LoadingState />;
+  if (loadingSummary) return <SkeletonTable rows={5} columns={4} />;
 
   return (
     <div className="space-y-6">
@@ -67,7 +67,7 @@ function ClientPortalContent({ companyId }: { companyId: string }) {
       <div className="space-y-2">
         <h3 className="text-lg font-semibold">Guias de Pagamento</h3>
         {loadingPayments ? (
-          <LoadingState />
+          <SkeletonTable rows={5} columns={4} />
         ) : !payments || payments.length === 0 ? (
           <div className="py-8 text-center text-sm text-muted-foreground">
             Nenhuma guia encontrada
@@ -84,7 +84,7 @@ function ClientPortalContent({ companyId }: { companyId: string }) {
       <div className="space-y-2">
         <h3 className="text-lg font-semibold">Obrigacoes Acessorias</h3>
         {loadingObligations ? (
-          <LoadingState />
+          <SkeletonTable rows={5} columns={4} />
         ) : !obligations || obligations.length === 0 ? (
           <div className="py-8 text-center text-sm text-muted-foreground">
             Nenhuma obrigacao encontrada

@@ -41,6 +41,7 @@ import { CustosAnalysisPage } from '@/features/custos/pages/CustosAnalysisPage';
 import { ProtocoloPage } from '@/features/protocolo/pages/ProtocoloPage';
 import { CertificatesPage } from '@/features/certificates/pages/CertificatesPage';
 import { QueuesPage } from '@/features/admin/pages/QueuesPage';
+import { NotFoundPage } from '@/features/errors/NotFoundPage';
 
 export function AppRoutes() {
   return (
@@ -141,7 +142,13 @@ export function AppRoutes() {
 
         {/* Admin */}
         <Route path="admin/queues" element={<QueuesPage />} />
+
+        {/* 404 dentro do app */}
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
+
+      {/* 404 global */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

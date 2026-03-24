@@ -9,6 +9,8 @@ import {
   Cell,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PieChart } from 'lucide-react';
 
 interface TaxBurdenData {
   tipo: string;
@@ -54,12 +56,12 @@ export function TaxBurdenChart({ data, isLoading }: TaxBurdenChartProps) {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            Carregando...
-          </div>
+          <Skeleton className="h-[300px] w-full rounded-md" />
         ) : chartData.length === 0 ? (
-          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            Sem apuracoes no periodo
+          <div className="h-[300px] flex flex-col items-center justify-center text-center">
+            <PieChart className="h-10 w-10 text-muted-foreground/40 mb-3" />
+            <p className="text-sm font-medium">Sem apuracoes no periodo</p>
+            <p className="text-xs text-muted-foreground mt-1">Execute a apuracao fiscal para ver a carga tributaria</p>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
