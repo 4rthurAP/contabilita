@@ -4,18 +4,21 @@ import { AuditService } from './audit.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../tenant/guards/tenant.guard';
 import { RolesGuard } from '../tenant/guards/roles.guard';
+import { AbilitiesGuard } from '../../common/guards/abilities.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { CheckAbilities } from '../../common/decorators/check-abilities.decorator';
 import { TenantRole } from '@contabilita/shared';
 
 @ApiTags('Auditoria')
 @Controller('audit')
-@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, AbilitiesGuard)
 @ApiBearerAuth()
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 
   @Get()
   @Roles(TenantRole.Owner, TenantRole.Admin)
+  @CheckAbilities(['read', 'Audit'])
   @ApiOperation({ summary: 'Listar logs de auditoria' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
@@ -41,6 +44,7 @@ export class AuditController {
 
   @Get('resource/:resource/:resourceId')
   @Roles(TenantRole.Owner, TenantRole.Admin)
+  @CheckAbilities(['read', 'Audit'])
   @ApiOperation({ summary: 'Timeline de auditoria de um recurso' })
   getTimeline(@Param('resource') resource: string, @Param('resourceId') resourceId: string) {
     return this.auditService.getResourceTimeline(resource, resourceId);

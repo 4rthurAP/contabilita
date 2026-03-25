@@ -16,18 +16,21 @@ import { UpdateCompanyDto } from './dto/update-company.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../tenant/guards/tenant.guard';
 import { RolesGuard } from '../tenant/guards/roles.guard';
+import { AbilitiesGuard } from '../../common/guards/abilities.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { CheckAbilities } from '../../common/decorators/check-abilities.decorator';
 import { TenantRole } from '@contabilita/shared';
 
 @ApiTags('Companies')
 @Controller('companies')
-@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, AbilitiesGuard)
 @ApiBearerAuth()
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
   @Post()
   @Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
+  @CheckAbilities(['create', 'Company'])
   @ApiOperation({ summary: 'Cadastrar nova empresa' })
   create(@Body() dto: CreateCompanyDto) {
     return this.companyService.create(dto);
@@ -54,6 +57,7 @@ export class CompanyController {
 
   @Put(':id')
   @Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
+  @CheckAbilities(['update', 'Company'])
   @ApiOperation({ summary: 'Atualizar empresa' })
   update(@Param('id') id: string, @Body() dto: UpdateCompanyDto) {
     return this.companyService.update(id, dto);
@@ -61,6 +65,7 @@ export class CompanyController {
 
   @Delete(':id')
   @Roles(TenantRole.Owner, TenantRole.Admin)
+  @CheckAbilities(['delete', 'Company'])
   @ApiOperation({ summary: 'Remover empresa (soft delete)' })
   remove(@Param('id') id: string) {
     return this.companyService.remove(id);

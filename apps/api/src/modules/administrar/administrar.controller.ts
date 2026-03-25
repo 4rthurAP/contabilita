@@ -4,16 +4,22 @@ import { AdministrarService } from './administrar.service';
 import { CreateTarefaDto, UpdateTarefaDto } from './dto/create-tarefa.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../tenant/guards/tenant.guard';
-import { StatusTarefa, PrioridadeTarefa } from '@contabilita/shared';
+import { RolesGuard } from '../tenant/guards/roles.guard';
+import { AbilitiesGuard } from '../../common/guards/abilities.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { CheckAbilities } from '../../common/decorators/check-abilities.decorator';
+import { StatusTarefa, PrioridadeTarefa, TenantRole } from '@contabilita/shared';
 
 @ApiTags('Tarefas')
 @Controller('tarefas')
-@UseGuards(JwtAuthGuard, TenantGuard)
+@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, AbilitiesGuard)
 @ApiBearerAuth()
 export class AdministrarController {
   constructor(private readonly administrarService: AdministrarService) {}
 
   @Post()
+  @Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
+  @CheckAbilities(['create', 'Administrar'])
   @ApiOperation({ summary: 'Criar tarefa' })
   create(@Body() dto: CreateTarefaDto) {
     return this.administrarService.create(dto);
@@ -33,12 +39,16 @@ export class AdministrarController {
   }
 
   @Patch(':id')
+  @Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
+  @CheckAbilities(['update', 'Administrar'])
   @ApiOperation({ summary: 'Atualizar tarefa' })
   update(@Param('id') id: string, @Body() dto: UpdateTarefaDto) {
     return this.administrarService.update(id, dto);
   }
 
   @Patch(':id/complete')
+  @Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
+  @CheckAbilities(['update', 'Administrar'])
   @ApiOperation({ summary: 'Concluir tarefa' })
   complete(@Param('id') id: string) {
     return this.administrarService.complete(id);

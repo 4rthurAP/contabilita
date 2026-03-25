@@ -25,13 +25,13 @@ export class TenantController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obter escritorio por ID' })
-  findOne(@Param('id') id: string) {
-    return this.tenantService.findById(id);
+  findOne(@Param('id') id: string, @Req() req: any) {
+    return this.tenantService.findById(id, req.user.id);
   }
 
   @Get(':id/members')
   @ApiOperation({ summary: 'Listar membros do escritorio' })
-  getMembers(@Param('id') id: string) {
-    return this.tenantService.getMembers(id);
+  getMembers(@Param('id') id: string, @Req() req: any) {
+    return this.tenantService.getMembers(id, req.user.id);
   }
 }

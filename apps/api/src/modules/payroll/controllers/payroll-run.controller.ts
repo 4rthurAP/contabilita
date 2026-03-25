@@ -4,18 +4,21 @@ import { PayrollRunService } from '../services/payroll-run.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../../tenant/guards/tenant.guard';
 import { RolesGuard } from '../../tenant/guards/roles.guard';
+import { AbilitiesGuard } from '../../../common/guards/abilities.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
+import { CheckAbilities } from '../../../common/decorators/check-abilities.decorator';
 import { TenantRole } from '@contabilita/shared';
 
 @ApiTags('Folha de Pagamento')
 @Controller('companies/:companyId/payroll-runs')
-@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, AbilitiesGuard)
 @ApiBearerAuth()
 export class PayrollRunController {
   constructor(private readonly payrollRunService: PayrollRunService) {}
 
   @Post(':year/:month')
   @Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
+  @CheckAbilities(['create', 'Payroll'])
   @ApiOperation({ summary: 'Criar folha (mensal, ferias, 13o, rescisao)' })
   @ApiQuery({ name: 'tipo', required: false, description: 'Tipo: mensal, ferias, 13_primeira_parcela, 13_segunda_parcela, rescisao' })
   create(
@@ -29,6 +32,7 @@ export class PayrollRunController {
 
   @Patch(':id/calculate')
   @Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
+  @CheckAbilities(['update', 'Payroll'])
   @ApiOperation({ summary: 'Calcular folha (gera holerites)' })
   calculate(@Param('companyId') companyId: string, @Param('id') id: string) {
     return this.payrollRunService.calculate(companyId, id);
@@ -36,6 +40,7 @@ export class PayrollRunController {
 
   @Patch(':id/approve')
   @Roles(TenantRole.Owner, TenantRole.Admin)
+  @CheckAbilities(['update', 'Payroll'])
   @ApiOperation({ summary: 'Aprovar folha' })
   approve(@Param('companyId') companyId: string, @Param('id') id: string) {
     return this.payrollRunService.approve(companyId, id);
@@ -43,6 +48,7 @@ export class PayrollRunController {
 
   @Patch(':id/close')
   @Roles(TenantRole.Owner, TenantRole.Admin)
+  @CheckAbilities(['update', 'Payroll'])
   @ApiOperation({ summary: 'Fechar folha' })
   close(@Param('companyId') companyId: string, @Param('id') id: string) {
     return this.payrollRunService.close(companyId, id);

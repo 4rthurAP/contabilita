@@ -42,6 +42,7 @@ import { ProtocoloPage } from '@/features/protocolo/pages/ProtocoloPage';
 import { CertificatesPage } from '@/features/certificates/pages/CertificatesPage';
 import { QueuesPage } from '@/features/admin/pages/QueuesPage';
 import { NotFoundPage } from '@/features/errors/NotFoundPage';
+import { PermissionGate } from '@/components/auth/PermissionGate';
 
 export function AppRoutes() {
   return (
@@ -60,88 +61,88 @@ export function AppRoutes() {
         <Route index element={<DashboardPage />} />
 
         {/* Empresas */}
-        <Route path="companies" element={<CompaniesPage />} />
-        <Route path="companies/new" element={<CompanyFormPage />} />
-        <Route path="companies/:id/edit" element={<CompanyFormPage />} />
+        <Route path="companies" element={<PermissionGate action="read" subject="Company"><CompaniesPage /></PermissionGate>} />
+        <Route path="companies/new" element={<PermissionGate action="create" subject="Company"><CompanyFormPage /></PermissionGate>} />
+        <Route path="companies/:id/edit" element={<PermissionGate action="update" subject="Company"><CompanyFormPage /></PermissionGate>} />
 
         {/* Contabilidade */}
-        <Route path="accounting" element={<ChartOfAccountsPage />} />
-        <Route path="accounting/journal-entries" element={<JournalEntriesPage />} />
-        <Route path="accounting/journal-entries/new" element={<JournalEntryFormPage />} />
-        <Route path="accounting/ledger" element={<LedgerPage />} />
-        <Route path="accounting/trial-balance" element={<TrialBalancePage />} />
+        <Route path="accounting" element={<PermissionGate action="read" subject="Account"><ChartOfAccountsPage /></PermissionGate>} />
+        <Route path="accounting/journal-entries" element={<PermissionGate action="read" subject="JournalEntry"><JournalEntriesPage /></PermissionGate>} />
+        <Route path="accounting/journal-entries/new" element={<PermissionGate action="create" subject="JournalEntry"><JournalEntryFormPage /></PermissionGate>} />
+        <Route path="accounting/ledger" element={<PermissionGate action="read" subject="JournalEntry"><LedgerPage /></PermissionGate>} />
+        <Route path="accounting/trial-balance" element={<PermissionGate action="read" subject="Account"><TrialBalancePage /></PermissionGate>} />
 
         {/* Escrita Fiscal */}
         <Route path="fiscal" element={<Navigate to="invoices" replace />} />
-        <Route path="fiscal/invoices" element={<InvoicesPage />} />
-        <Route path="fiscal/assessment" element={<TaxAssessmentPage />} />
-        <Route path="fiscal/payments" element={<TaxPaymentsPage />} />
+        <Route path="fiscal/invoices" element={<PermissionGate action="read" subject="FiscalInvoice"><InvoicesPage /></PermissionGate>} />
+        <Route path="fiscal/assessment" element={<PermissionGate action="read" subject="TaxAssessment"><TaxAssessmentPage /></PermissionGate>} />
+        <Route path="fiscal/payments" element={<PermissionGate action="read" subject="TaxPayment"><TaxPaymentsPage /></PermissionGate>} />
 
         {/* Folha de Pagamento */}
         <Route path="payroll" element={<Navigate to="runs" replace />} />
-        <Route path="payroll/employees" element={<EmployeesPage />} />
-        <Route path="payroll/runs" element={<PayrollRunsPage />} />
+        <Route path="payroll/employees" element={<PermissionGate action="read" subject="Employee"><EmployeesPage /></PermissionGate>} />
+        <Route path="payroll/runs" element={<PermissionGate action="read" subject="Payroll"><PayrollRunsPage /></PermissionGate>} />
 
         {/* Patrimonio */}
-        <Route path="assets" element={<AssetsPage />} />
+        <Route path="assets" element={<PermissionGate action="read" subject="Asset"><AssetsPage /></PermissionGate>} />
 
         {/* Relatorios */}
-        <Route path="accounting/balanco" element={<BalancoPatrimonialPage />} />
-        <Route path="accounting/dre" element={<DREPage />} />
+        <Route path="accounting/balanco" element={<PermissionGate action="read" subject="Report"><BalancoPatrimonialPage /></PermissionGate>} />
+        <Route path="accounting/dre" element={<PermissionGate action="read" subject="Report"><DREPage /></PermissionGate>} />
 
         {/* Obrigacoes Acessorias */}
-        <Route path="obligations" element={<ObligationsPage />} />
+        <Route path="obligations" element={<PermissionGate action="read" subject="Obligation"><ObligationsPage /></PermissionGate>} />
 
         {/* Atualizar Impostos */}
-        <Route path="tax-update" element={<TaxUpdatePage />} />
+        <Route path="tax-update" element={<PermissionGate action="read" subject="TaxUpdate"><TaxUpdatePage /></PermissionGate>} />
 
         {/* LALUR */}
-        <Route path="lalur" element={<LalurPage />} />
-        <Route path="lalur/calculate" element={<LalurCalcPage />} />
+        <Route path="lalur" element={<PermissionGate action="read" subject="Lalur"><LalurPage /></PermissionGate>} />
+        <Route path="lalur/calculate" element={<PermissionGate action="read" subject="Lalur"><LalurCalcPage /></PermissionGate>} />
 
         {/* Portal do Cliente */}
-        <Route path="portal" element={<ClientPortalPage />} />
+        <Route path="portal" element={<PermissionGate action="read" subject="ClientPortal"><ClientPortalPage /></PermissionGate>} />
 
         {/* Auditoria */}
-        <Route path="audit" element={<AuditPage />} />
+        <Route path="audit" element={<PermissionGate action="read" subject="Audit"><AuditPage /></PermissionGate>} />
 
         {/* Registro */}
-        <Route path="registro" element={<RegistroPage />} />
-        <Route path="registro/:id" element={<RegistroDetailPage />} />
+        <Route path="registro" element={<PermissionGate action="read" subject="Registro"><RegistroPage /></PermissionGate>} />
+        <Route path="registro/:id" element={<PermissionGate action="read" subject="Registro"><RegistroDetailPage /></PermissionGate>} />
 
         {/* Administrar */}
         <Route path="administrar" element={<Navigate to="tarefas" replace />} />
-        <Route path="administrar/tarefas" element={<TarefasPage />} />
-        <Route path="administrar/produtividade" element={<ProdutividadePage />} />
+        <Route path="administrar/tarefas" element={<PermissionGate action="read" subject="Administrar"><TarefasPage /></PermissionGate>} />
+        <Route path="administrar/produtividade" element={<PermissionGate action="read" subject="Administrar"><ProdutividadePage /></PermissionGate>} />
 
         {/* Honorarios */}
         <Route path="honorarios" element={<Navigate to="contratos" replace />} />
-        <Route path="honorarios/contratos" element={<ContratosPage />} />
-        <Route path="honorarios/cobrancas" element={<CobrancasPage />} />
-        <Route path="honorarios/fluxo-caixa" element={<FluxoCaixaPage />} />
+        <Route path="honorarios/contratos" element={<PermissionGate action="read" subject="Honorario"><ContratosPage /></PermissionGate>} />
+        <Route path="honorarios/cobrancas" element={<PermissionGate action="read" subject="Honorario"><CobrancasPage /></PermissionGate>} />
+        <Route path="honorarios/fluxo-caixa" element={<PermissionGate action="read" subject="Honorario"><FluxoCaixaPage /></PermissionGate>} />
 
         {/* Portal do Empregado */}
-        <Route path="employee-portal" element={<EmployeePortalPage />} />
+        <Route path="employee-portal" element={<PermissionGate action="read" subject="EmployeePortal"><EmployeePortalPage /></PermissionGate>} />
 
         {/* CCT */}
-        <Route path="cct" element={<CctPage />} />
+        <Route path="cct" element={<PermissionGate action="read" subject="Cct"><CctPage /></PermissionGate>} />
 
         {/* Custos */}
         <Route path="custos" element={<Navigate to="time-tracking" replace />} />
-        <Route path="custos/time-tracking" element={<TimeTrackingPage />} />
-        <Route path="custos/analysis" element={<CustosAnalysisPage />} />
+        <Route path="custos/time-tracking" element={<PermissionGate action="read" subject="Custo"><TimeTrackingPage /></PermissionGate>} />
+        <Route path="custos/analysis" element={<PermissionGate action="read" subject="Custo"><CustosAnalysisPage /></PermissionGate>} />
 
         {/* Protocolo */}
-        <Route path="protocolo" element={<ProtocoloPage />} />
+        <Route path="protocolo" element={<PermissionGate action="read" subject="Protocolo"><ProtocoloPage /></PermissionGate>} />
 
         {/* Busca NF-e */}
-        <Route path="busca-nfe" element={<BuscaNfePage />} />
+        <Route path="busca-nfe" element={<PermissionGate action="read" subject="BuscaNfe"><BuscaNfePage /></PermissionGate>} />
 
         {/* Certificados Digitais */}
-        <Route path="certificates" element={<CertificatesPage />} />
+        <Route path="certificates" element={<PermissionGate action="read" subject="Certificate"><CertificatesPage /></PermissionGate>} />
 
         {/* Admin */}
-        <Route path="admin/queues" element={<QueuesPage />} />
+        <Route path="admin/queues" element={<PermissionGate action="read" subject="QueueAdmin"><QueuesPage /></PermissionGate>} />
 
         {/* 404 dentro do app */}
         <Route path="*" element={<NotFoundPage />} />

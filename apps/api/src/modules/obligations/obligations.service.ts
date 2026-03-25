@@ -7,6 +7,7 @@ import { Obligation, ObligationDocument } from './schemas/obligation.schema';
 import { SpedEcdGenerator } from './generators/sped-ecd.generator';
 import { SpedEfdGenerator } from './generators/sped-efd.generator';
 import { SpedReinfGenerator } from './generators/sped-reinf.generator';
+import { StorageService } from '../storage/storage.service';
 import { requireCurrentTenant } from '../tenant/tenant.context';
 import { QUEUE_NAMES } from '../queue/queue.constants';
 import type { SpedTransmissionJobData } from './processors/sped-transmission.processor';
@@ -34,6 +35,7 @@ export class ObligationsService {
     private ecdGenerator: SpedEcdGenerator,
     private efdGenerator: SpedEfdGenerator,
     private reinfGenerator: SpedReinfGenerator,
+    private storageService: StorageService,
     @InjectQueue(QUEUE_NAMES.SPED_TRANSMISSION) private spedQueue: Queue<SpedTransmissionJobData>,
   ) {}
 
@@ -112,15 +114,27 @@ export class ObligationsService {
     return results;
   }
 
+  /** Upload de conteudo SPED para storage e retorno da key */
+  private async uploadToStorage(tenantId: string, fileName: string, content: string): Promise<string> {
+    const buffer = Buffer.from(content, 'utf-8');
+    return this.storageService.upload(buffer, {
+      tenantId,
+      folder: 'sped',
+      fileName,
+      contentType: fileName.endsWith('.xml') ? 'application/xml' : 'text/plain',
+    });
+  }
+
   /** Gera arquivo SPED ECD */
   async generateEcd(companyId: string, year: number) {
     const ctx = requireCurrentTenant();
     const content = await this.ecdGenerator.generate(ctx.tenantId, companyId, year);
     const fileName = `ECD_${year}.txt`;
+    const fileKey = await this.uploadToStorage(ctx.tenantId, fileName, content);
 
     await this.obligationModel.findOneAndUpdate(
       { tenantId: ctx.tenantId, companyId, tipo: 'ECD', competencia: String(year) },
-      { status: 'gerada', fileName, fileContent: content, updatedBy: ctx.userId },
+      { status: 'gerada', fileName, fileKey, updatedBy: ctx.userId },
       { upsert: true, new: true },
     );
 
@@ -133,10 +147,11 @@ export class ObligationsService {
     const content = await this.efdGenerator.generate(ctx.tenantId, companyId, year, month);
     const competencia = `${String(month).padStart(2, '0')}/${year}`;
     const fileName = `EFD_${competencia.replace('/', '_')}.txt`;
+    const fileKey = await this.uploadToStorage(ctx.tenantId, fileName, content);
 
     await this.obligationModel.findOneAndUpdate(
       { tenantId: ctx.tenantId, companyId, tipo: 'EFD', competencia },
-      { status: 'gerada', fileName, fileContent: content, updatedBy: ctx.userId },
+      { status: 'gerada', fileName, fileKey, updatedBy: ctx.userId },
       { upsert: true, new: true },
     );
 
@@ -155,24 +170,32 @@ export class ObligationsService {
     const competencia = `${String(month).padStart(2, '0')}/${year}`;
     const fileName = `REINF_${competencia.replace('/', '_')}.xml`;
     const content = events.join('\n\n');
+    const fileKey = await this.uploadToStorage(ctx.tenantId, fileName, content);
 
     await this.obligationModel.findOneAndUpdate(
       { tenantId: ctx.tenantId, companyId, tipo: 'EFD_REINF', competencia },
-      { status: 'gerada', fileName, fileContent: content, updatedBy: ctx.userId },
+      { status: 'gerada', fileName, fileKey, updatedBy: ctx.userId },
       { upsert: true, new: true },
     );
 
     return { fileName, eventsCount: events.length, summary };
   }
 
-  /** Download do arquivo gerado */
+  /** Download do arquivo gerado (S3 ou legacy fileContent) */
   async downloadFile(companyId: string, id: string) {
     const ctx = requireCurrentTenant();
     const obl = await this.obligationModel.findOne({ _id: id, tenantId: ctx.tenantId, companyId });
     if (!obl) throw new NotFoundException('Obrigacao nao encontrada');
-    if (!obl.fileContent) throw new BadRequestException('Arquivo ainda nao foi gerado');
 
-    return { fileName: obl.fileName, content: obl.fileContent };
+    // Prioriza S3, fallback para legacy fileContent
+    if (obl.fileKey) {
+      const buffer = await this.storageService.download(obl.fileKey);
+      return { fileName: obl.fileName, content: buffer.toString('utf-8') };
+    }
+    if (obl.fileContent) {
+      return { fileName: obl.fileName, content: obl.fileContent };
+    }
+    throw new BadRequestException('Arquivo ainda nao foi gerado');
   }
 
   /** Enfileira transmissao SPED via certificado A1 */
@@ -180,7 +203,7 @@ export class ObligationsService {
     const ctx = requireCurrentTenant();
     const obl = await this.obligationModel.findOne({ _id: id, tenantId: ctx.tenantId, companyId });
     if (!obl) throw new NotFoundException('Obrigacao nao encontrada');
-    if (!obl.fileContent) throw new BadRequestException('Arquivo ainda nao foi gerado');
+    if (!obl.fileKey && !obl.fileContent) throw new BadRequestException('Arquivo ainda nao foi gerado');
     if (obl.status === 'transmitida') throw new BadRequestException('Obrigacao ja transmitida');
 
     const job = await this.spedQueue.add('transmit-sped', {

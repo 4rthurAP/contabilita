@@ -5,15 +5,22 @@ import { CreateAccountDto } from '../dto/create-account.dto';
 import { UpdateAccountDto } from '../dto/update-account.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../../tenant/guards/tenant.guard';
+import { RolesGuard } from '../../tenant/guards/roles.guard';
+import { AbilitiesGuard } from '../../../common/guards/abilities.guard';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { CheckAbilities } from '../../../common/decorators/check-abilities.decorator';
+import { TenantRole } from '@contabilita/shared';
 
 @ApiTags('Plano de Contas')
 @Controller('companies/:companyId/accounts')
-@UseGuards(JwtAuthGuard, TenantGuard)
+@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, AbilitiesGuard)
 @ApiBearerAuth()
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
   @Post()
+  @Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
+  @CheckAbilities(['create', 'Account'])
   @ApiOperation({ summary: 'Criar conta no plano de contas' })
   create(@Param('companyId') companyId: string, @Body() dto: CreateAccountDto) {
     return this.accountService.create(companyId, dto);
@@ -44,6 +51,8 @@ export class AccountController {
   }
 
   @Put(':id')
+  @Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
+  @CheckAbilities(['update', 'Account'])
   @ApiOperation({ summary: 'Atualizar conta' })
   update(
     @Param('companyId') companyId: string,
@@ -54,6 +63,8 @@ export class AccountController {
   }
 
   @Delete(':id')
+  @Roles(TenantRole.Owner, TenantRole.Admin)
+  @CheckAbilities(['delete', 'Account'])
   @ApiOperation({ summary: 'Remover conta (soft delete)' })
   remove(@Param('companyId') companyId: string, @Param('id') id: string) {
     return this.accountService.remove(companyId, id);

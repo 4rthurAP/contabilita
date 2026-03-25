@@ -36,6 +36,7 @@ export function defineAbilityFor(role: TenantRole): AppAbility {
         'Employee',
         'Lalur',
         'Custo',
+        'Administrar',
       ]);
       // Read-only
       can('read', ['Honorario', 'Cct']);
@@ -64,6 +65,7 @@ export function defineAbilityFor(role: TenantRole): AppAbility {
         'Lalur',
         'Custo',
         'Cct',
+        'Administrar',
       ]);
       break;
 

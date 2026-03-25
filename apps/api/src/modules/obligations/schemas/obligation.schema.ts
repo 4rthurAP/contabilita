@@ -37,7 +37,10 @@ export class Obligation {
   fileName: string;
 
   @Prop()
-  fileContent: string; // Conteudo do arquivo gerado (SPED text)
+  fileContent: string; // Legacy: conteudo inline (migrar para S3)
+
+  @Prop()
+  fileKey: string; // Storage key para S3/local
 
   @Prop()
   recibo: string; // Numero do recibo de transmissao

@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Tenant, TenantDocument } from './schemas/tenant.schema';
@@ -49,18 +49,33 @@ export class TenantService {
     }));
   }
 
-  async findById(tenantId: string) {
+  async findById(tenantId: string, requestingUserId?: string) {
     const tenant = await this.tenantModel.findById(tenantId);
     if (!tenant) {
       throw new NotFoundException('Escritorio nao encontrado');
     }
+    if (requestingUserId) {
+      await this.validateMembership(tenantId, requestingUserId);
+    }
     return tenant;
   }
 
-  async getMembers(tenantId: string) {
+  async getMembers(tenantId: string, requestingUserId: string) {
+    const membership = await this.validateMembership(tenantId, requestingUserId);
+    if (![TenantRole.Owner, TenantRole.Admin].includes(membership.role as TenantRole)) {
+      throw new ForbiddenException('Apenas Owner ou Admin podem listar membros');
+    }
     return this.tenantUserModel
       .find({ tenantId, isActive: true })
       .populate('userId', 'name email cpf');
+  }
+
+  async validateMembership(tenantId: string, userId: string): Promise<TenantUserDocument> {
+    const membership = await this.tenantUserModel.findOne({ tenantId, userId, isActive: true });
+    if (!membership) {
+      throw new ForbiddenException('Acesso negado a este escritorio');
+    }
+    return membership;
   }
 
   async addMember(tenantId: string, userId: string, role: TenantRole) {

@@ -17,15 +17,18 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiQuery } from '@ne
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../tenant/guards/tenant.guard';
 import { RolesGuard } from '../tenant/guards/roles.guard';
+import { AbilitiesGuard } from '../../common/guards/abilities.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { CheckAbilities } from '../../common/decorators/check-abilities.decorator';
 import { BankReconciliationService } from './services/bank-reconciliation.service';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { BankTransactionStatus } from './schemas/bank-transaction.schema';
+import { TenantRole } from '@contabilita/shared';
 
 @ApiTags('Conciliacao Bancaria')
 @Controller('bank-reconciliation')
-@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
-@Roles('Owner', 'Admin', 'Accountant')
+@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, AbilitiesGuard)
+@Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
 @ApiBearerAuth()
 export class BankReconciliationController {
   constructor(private readonly service: BankReconciliationService) {}
@@ -33,6 +36,7 @@ export class BankReconciliationController {
   // ── Bank Accounts ──────────────────────────────
 
   @Post('companies/:companyId/accounts')
+  @CheckAbilities(['create', 'Account'])
   @ApiOperation({ summary: 'Criar conta bancaria' })
   createAccount(
     @Param('companyId') companyId: string,
@@ -42,6 +46,7 @@ export class BankReconciliationController {
   }
 
   @Get('companies/:companyId/accounts')
+  @CheckAbilities(['read', 'Account'])
   @ApiOperation({ summary: 'Listar contas bancarias da empresa' })
   findAccounts(@Param('companyId') companyId: string) {
     return this.service.findBankAccounts(companyId);
@@ -50,6 +55,7 @@ export class BankReconciliationController {
   // ── OFX Import ─────────────────────────────────
 
   @Post('companies/:companyId/accounts/:bankAccountId/import-ofx')
+  @CheckAbilities(['create', 'Account'])
   @ApiOperation({ summary: 'Importar extrato OFX/OFC' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))
@@ -70,6 +76,7 @@ export class BankReconciliationController {
   // ── Transactions ───────────────────────────────
 
   @Get('companies/:companyId/accounts/:bankAccountId/transactions')
+  @CheckAbilities(['read', 'Account'])
   @ApiOperation({ summary: 'Listar transacoes do extrato' })
   @ApiQuery({ name: 'status', required: false, enum: BankTransactionStatus })
   @ApiQuery({ name: 'startDate', required: false })
@@ -92,6 +99,7 @@ export class BankReconciliationController {
   }
 
   @Get('companies/:companyId/accounts/:bankAccountId/summary')
+  @CheckAbilities(['read', 'Account'])
   @ApiOperation({ summary: 'Resumo de conciliacao' })
   getSummary(
     @Param('companyId') companyId: string,
@@ -101,6 +109,7 @@ export class BankReconciliationController {
   }
 
   @Patch('transactions/:id/reconcile')
+  @CheckAbilities(['update', 'Account'])
   @ApiOperation({ summary: 'Conciliar transacao manualmente' })
   reconcile(
     @Param('id') id: string,
@@ -110,6 +119,7 @@ export class BankReconciliationController {
   }
 
   @Patch('transactions/:id/ignore')
+  @CheckAbilities(['update', 'Account'])
   @ApiOperation({ summary: 'Ignorar transacao' })
   ignore(@Param('id') id: string) {
     return this.service.ignore(id);

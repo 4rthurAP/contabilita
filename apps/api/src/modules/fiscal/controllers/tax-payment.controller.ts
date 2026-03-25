@@ -3,6 +3,11 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { TaxPaymentService } from '../services/tax-payment.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../../tenant/guards/tenant.guard';
+import { RolesGuard } from '../../tenant/guards/roles.guard';
+import { AbilitiesGuard } from '../../../common/guards/abilities.guard';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { CheckAbilities } from '../../../common/decorators/check-abilities.decorator';
+import { TenantRole } from '@contabilita/shared';
 import { IsDateString } from 'class-validator';
 
 class MarkPaidDto {
@@ -12,12 +17,14 @@ class MarkPaidDto {
 
 @ApiTags('Guias de Pagamento')
 @Controller('companies/:companyId/tax-payments')
-@UseGuards(JwtAuthGuard, TenantGuard)
+@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, AbilitiesGuard)
 @ApiBearerAuth()
 export class TaxPaymentController {
   constructor(private readonly taxPaymentService: TaxPaymentService) {}
 
   @Post('generate/:year/:month')
+  @Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
+  @CheckAbilities(['create', 'TaxPayment'])
   @ApiOperation({ summary: 'Gerar guias a partir da apuracao mensal' })
   generate(
     @Param('companyId') companyId: string,
@@ -35,6 +42,8 @@ export class TaxPaymentController {
   }
 
   @Patch(':id/pay')
+  @Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
+  @CheckAbilities(['update', 'TaxPayment'])
   @ApiOperation({ summary: 'Marcar guia como paga' })
   markAsPaid(
     @Param('companyId') companyId: string,

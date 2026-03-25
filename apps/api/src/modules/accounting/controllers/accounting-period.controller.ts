@@ -4,12 +4,14 @@ import { AccountingPeriodService } from '../services/accounting-period.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../../tenant/guards/tenant.guard';
 import { RolesGuard } from '../../tenant/guards/roles.guard';
+import { AbilitiesGuard } from '../../../common/guards/abilities.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
+import { CheckAbilities } from '../../../common/decorators/check-abilities.decorator';
 import { TenantRole } from '@contabilita/shared';
 
 @ApiTags('Periodos Contabeis')
 @Controller('companies/:companyId/accounting-periods')
-@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, AbilitiesGuard)
 @ApiBearerAuth()
 export class AccountingPeriodController {
   constructor(private readonly periodService: AccountingPeriodService) {}
@@ -23,6 +25,7 @@ export class AccountingPeriodController {
 
   @Post(':year/:month')
   @Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
+  @CheckAbilities(['create', 'JournalEntry'])
   @ApiOperation({ summary: 'Abrir periodo contabil' })
   open(
     @Param('companyId') companyId: string,
@@ -34,6 +37,7 @@ export class AccountingPeriodController {
 
   @Patch(':id/close')
   @Roles(TenantRole.Owner, TenantRole.Admin, TenantRole.Accountant)
+  @CheckAbilities(['update', 'JournalEntry'])
   @ApiOperation({ summary: 'Fechar periodo contabil' })
   close(@Param('companyId') companyId: string, @Param('id') id: string) {
     return this.periodService.closePeriod(companyId, id);
@@ -41,6 +45,7 @@ export class AccountingPeriodController {
 
   @Patch(':id/reopen')
   @Roles(TenantRole.Owner, TenantRole.Admin)
+  @CheckAbilities(['update', 'JournalEntry'])
   @ApiOperation({ summary: 'Reabrir periodo contabil (apenas Owner/Admin)' })
   reopen(@Param('companyId') companyId: string, @Param('id') id: string) {
     return this.periodService.reopenPeriod(companyId, id);
